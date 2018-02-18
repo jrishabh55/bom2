@@ -36,7 +36,7 @@
                                     "discount": 20,
                                     "GST": 18,
                                     "list_price": 458,
-                                    "delivery_city": "Pune",
+                                    "delivery_city": "Delhi",
                                     "bid_price": 366.4
                                 }
                             },
@@ -64,7 +64,7 @@
                                     "discount": 10,
                                     "GST": 18,
                                     "list_price": 558,
-                                    "delivery_city": "Pune",
+                                    "delivery_city": "Chennai",
                                     "bid_price": 502.2
                                 }
                             },

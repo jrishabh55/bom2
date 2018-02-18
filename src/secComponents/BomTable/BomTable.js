@@ -28,31 +28,13 @@ export class BomTable extends Component {
             USD: 0.015535,
             GBP: 0.011232
         };
-        this.supplierDataCaption;
-        this.supplierDataBody;
         this.saveBtn;
         this.quantity;
         this.totalAmount = [];
         this.currTableData;
-
-        this.supplierDataCaption = null;
-        this.supplierDataBody = null;
-
-        this.supplierDetails = {
-            'qty': '5',
-            'totalAmount': '790',
-            'offManf': 'ASdcdssd',
-            'offPartNo': '465845454845',
-            'paymentTerms': '30% advance',
-            'cashDiscount': '2%',
-            'discount': '20%',
-            'stock': '18',
-            'timeToArrangeParts': '-',
-            'location': 'Pune',
-            'Remarks': 'No Packing'
-        };
+        this.supplierDataCaption = '';
+        this.supplierDataBody = '';
         this.bomId = this.props.match.params.bomId;
-
         let comment = [];
         let history = [];
 
@@ -78,7 +60,7 @@ export class BomTable extends Component {
             currencySymbol: '₹',
             currencyRate: 1,
             orderAmount: 0,
-            lowestQuote: [],
+            vendorData: [],
             vendorQuotes: [],
             }
     }
@@ -123,13 +105,15 @@ export class BomTable extends Component {
                     console.log(Lowest)
                     data.push(Lowest);
                     this.setState({vendorQuotes: data}, ()=>console.log(this.state.vendorQuotes))
-                    this.quotedCurrData(Lowest);
+                    this.quotedCurrData(this.state.vendorQuotes);
                     data = this.state.vendorQuotes;
                     data.push(Vendor1)
                     this.setState({vendorQuotes: data}, ()=>console.log(this.state.vendorQuotes))
+                    this.quotedCurrData(this.state.vendorQuotes);
                     data = this.state.vendorQuotes;
                     data.push(Vendor2)
                     this.setState({vendorQuotes: data}, ()=>console.log(this.state.vendorQuotes))
+                    this.quotedCurrData(this.state.vendorQuotes);
                     // prefVend.map(($vend, $i) => {
                     //     ApiService.get(`/customer/${this.getContactId()}/bom/${this.bomId}/vendor/${$vend}`).then(vend => console.log('vend',vend))
                     // })
@@ -148,12 +132,15 @@ export class BomTable extends Component {
 
     }
 
-    quotedCurrData(res) {
-        const lowestQuote = res.aggregations.lowest_quotes.buckets.reduce((ittr, item) => {
+    quotedCurrData() {
+        let vData = this.state.vendorQuotes;
+        let temp = this.state.vendorData;
+        const quote = vData[temp.length].aggregations.lowest_quotes.buckets.reduce((ittr, item) => {
             ittr[item.key] = item.min_quotes.hits.hits[0]._source.quote;
             return ittr;
         }, {});
-        this.setState({ lowestQuote: lowestQuote }, () => console.log(this.state.lowestQuote));
+        temp.push(quote);
+        this.setState({ vendorData: temp }, () => console.log(this.state.vendorData));
     }
 
     // quotedCurrData() {
@@ -252,21 +239,7 @@ export class BomTable extends Component {
     }
 
     toggleDetailSupplier($supp) {
-        this.setState({
-            supp1: $supp === 1 ? !this.state.supp1 : false,
-            supp2: $supp === 2 ? !this.state.supp2 : false,
-            supp3: $supp === 3 ? !this.state.supp3 : false,
-        }, () => {
-            this.checkDetailed();
-        });
-    }
-
-    checkDetailed() {
-        if (this.state.supp1 || this.state.supp2 || this.state.supp3) {
-            this.setState({ detailSupplier: true });
-        } else {
-            this.setState({ detailSupplier: false });
-        }
+        this.setState({detailSupplier: $supp});
     }
 
     toggleFooter(index, expand, $id) {
@@ -323,30 +296,31 @@ export class BomTable extends Component {
         });
     }
 
-    lowestQuoteSupplier($data, $index, thisSupplier) {
+    lowestQuoteSupplier($data, $index, thisSupplier, $i) {
+        console.log(this.state.vendorData)
         return (this.supplierDataBody = [
             <td className="stock">
                 <label className="checkContainer">
                     <Input type="checkbox" name="signedIn"/>
                     <span className="checkmark"></span>
                 </label>
-                &#8377;{getProp(this.state.lowestQuote[$data.line_item_id], 'bid_price') || '-'}<br/>
-                <span className="stockLeft">{getProp(this.state.lowestQuote[$data.line_item_id], 'current_stock') || '-'}</span>
+                &#8377;{getProp(this.state.vendorData[$i][$data.line_item_id], 'bid_price') || '-'}<br/>
+                <span className="stockLeft">{getProp(this.state.vendorData[$i][$data.line_item_id], 'current_stock') || '-'}</span>
                 <span> in stock</span>
             </td>,
         (this.state.supp1 ? (
             [
                 <td>{'-'}</td>,
-                <td>{getProp(this.state.lowestQuote[$data.line_item_id], 'list_price') || '-'}</td>,
+                <td>{getProp(this.state.vendorData[$i][$data.line_item_id], 'list_price') || '-'}</td>,
                 <td>{'-'}</td>,
                 <td>{'-'}</td>,
                 <td>{'-'}</td>,
-                <td>{getProp(this.state.lowestQuote[$data.line_item_id], 'list_price') - getProp(this.state.lowestQuote[$data.line_item_id], 'bid_price') || '-'}</td>,
-                <td>{getProp(this.state.lowestQuote[$data.line_item_id], 'discount') || '-'}</td>,
-                <td>{getProp(this.state.lowestQuote[$data.line_item_id], 'current_stock') || '-'}</td>,
-                <td>{getProp(this.state.lowestQuote[$data.line_item_id], '-') || '-'}</td>,
-                <td>{getProp(this.state.lowestQuote[$data.line_item_id], 'delivery_city') || '-'}</td>,
-                <td>{getProp(this.state.lowestQuote[$data.line_item_id], '-') || '-'}</td>,
+                <td>{getProp(this.state.vendorData[$i][$data.line_item_id], 'list_price') - getProp(this.state.vendorData[$i][$data.line_item_id], 'bid_price') || '-'}</td>,
+                <td>{getProp(this.state.vendorData[$i][$data.line_item_id], 'discount') || '-'}</td>,
+                <td>{getProp(this.state.vendorData[$i][$data.line_item_id], 'current_stock') || '-'}</td>,
+                <td>{getProp(this.state.vendorData[$i][$data.line_item_id], '-') || '-'}</td>,
+                <td>{getProp(this.state.vendorData[$i][$data.line_item_id], 'delivery_city') || '-'}</td>,
+                <td>{getProp(this.state.vendorData[$i][$data.line_item_id], '-') || '-'}</td>,
             ]
         ) : null),
 
@@ -359,8 +333,17 @@ export class BomTable extends Component {
         ])
     }
 
+    dataCaption($i) {
+        return (
+            <td colSpan={this.state.supp1 ? '13' : 1} onClick={this.toggleDetailSupplier.bind(this, $i)}>
+            { !this.state.supp1 ? <span> <i className="fas fa-eye"></i> Unhide</span>
+            : <span> <i className="far fa-eye-slash"></i> Hide</span> }
+            </td>
+        )
+    }
+
     render() {
-        let thisSupplier = null;
+        let thisSupplier = '';
         thisSupplier = [
             <th>Qty.</th>,
             <th className="lg-width">Supplier (total Amount)</th>,
@@ -375,130 +358,18 @@ export class BomTable extends Component {
             <th>Remarks</th>,
             <th>Supplier Attachment</th>
         ];
-
-        if(this.state.lowestQuote) {
-            this.supplierDataCaption =
-                <td colSpan={this.state.supp1 ? '13' : 1} onClick={this.toggleDetailSupplier.bind(this, 1)}>
-                    { !this.state.supp1 ? <span> <i className="fas fa-eye"></i> Unhide</span>
-                            : <span> <i className="far fa-eye-slash"></i> Hide</span> }
-                </td>
-
-            this.supplierDataHead = [
-                <th className="supplier">
-                    <label className="checkContainer">
-                        <Input type="checkbox" name="signedIn"/>
-                        <span className="checkmark"></span>
-                    </label>
-                    <span className="ml-3 sort" onClick={this.sorting.bind(this, 'supplierA.price')}>Lowest Quote</span>
-                </th>,
-                (this.state.supp1 ? thisSupplier : null)
-            ]
-        }
-
-        if(this.state.supplierData) {
-            this.supplierDataCaption = [
-                <td colSpan={this.state.supp1 ? '13' : 1} onClick={this.toggleDetailSupplier.bind(this, 1)}>
-                    { !this.state.supp1 ? <span> <i className="fas fa-eye"></i> Unhide</span>
-                            : <span> <i className="far fa-eye-slash"></i> Hide</span> }
-                </td>,
-                <td colSpan={this.state.supp2 ? '13' : 1} onClick={this.toggleDetailSupplier.bind(this, 2)}>
-                    { !this.state.supp2 ? <span> <i className="fas fa-eye"></i> Unhide</span>
-                            : <span> <i className="far fa-eye-slash"></i> Hide</span> }
-                </td>,
-                <td colSpan={this.state.supp3 ? '13' : 1} onClick={this.toggleDetailSupplier.bind(this, 3)}>
-                    { !this.state.supp3 ? <span> <i className="fas fa-eye"></i> Unhide</span>
-                            : <span> <i className="far fa-eye-slash"></i> Hide</span> }
-                </td>
-            ];
-
-            this.supplierDataHead = [
-                <th className="supplier">
-                    <label className="checkContainer">
-                        <Input type="checkbox" name="signedIn"/>
-                        <span className="checkmark"></span>
-                    </label>
-                    <span className="ml-3 sort" onClick={this.sorting.bind(this, 'supplierA.price')}>Supplier A</span>
-                </th>,
-                (this.state.supp1 ? thisSupplier : null),
-                <th className="supplier">
-                    <label className="checkContainer">
-                        <Input type="checkbox" name="signedIn"/>
-                        <span className="checkmark"></span>
-                    </label>
-                    <span className="ml-3 sort" onClick={this.sorting.bind(this, 'supplierB.price')}>Supplier B</span>
-                </th>,
-                (this.state.supp2 ? thisSupplier : null),
-                <th className="supplier">
-                    <label className="checkContainer">
-                        <Input type="checkbox" name="signedIn"/>
-                        <span className="checkmark"></span>
-                    </label>
-                    <span className="ml-3 sort" onClick={this.sorting.bind(this, 'supplierC.price')}>Supplier C</span>
-                </th>,
-                ( this.state.supp3 ? thisSupplier : null)
-            ];
-
-            const keys = Object.keys(this.supplierDetails);
-            this.supplierDataBody = [
-                <td className="stock">
-                    <label className="checkContainer">
-                        <Input type="checkbox" name="signedIn"/>
-                        <span className="checkmark"></span>
-                    </label>
-                    &#8377;10<br/>
-                    <span className="stockLeft">10</span>
-                    <span> in stock</span>
-                </td>,
-            (this.state.supp1 ? (keys.map(key => <td>{this.supplierDetails[key]}</td>)) : null),
-
-                    (this.state.supp1
-                        ? (<td className="attachment">
-                            <i className="fas fa-plus-circle"></i>
-                            <i className="far fa-file-pdf"></i>
-                        </td>)
-                        : null),
-
-                <td className="stock">
-                    <label className="checkContainer">
-                        <Input type="checkbox" name="signedIn"/>
-                        <span className="checkmark"></span>
-                    </label>
-                    &#8377;10<br/>
-                    <span className="stockLeft">10</span>
-                    <span>in stock</span>
-                </td>,
-                 (this.state.supp2 ? (keys.map(key => <td>{this.supplierDetails[key]}</td>)) : null),
-
-                    (this.state.supp2
-                        ? (<td className="attachment">
-                            <i className="fas fa-plus-circle"></i>
-                            <i className="far fa-file-pdf"></i>
-                        </td>)
-                        : null),
-
-                <td className="stock">
-                    <label className="checkContainer">
-                        <Input type="checkbox" name="signedIn"/>
-                        <span className="checkmark"></span>
-                    </label>
-                    &#8377;10<br/>
-                    <span className="stockLeft">10</span>
-                    <span> in stock</span>
-                </td>,
-                 (this.state.supp3 ? (keys.map(key => <td>{this.supplierDetails[key]}</td> )) : null ),
-
-                    (this.state.supp3
-                        ? (<td className="attachment">
-                            <i className="fas fa-plus-circle"></i>
-                            <i className="far fa-file-pdf"></i>
-                        </td>)
-                        : null)
-
-            ]
-        }
-
-
-        return (
+        this.supplierDataHead = [
+            <th className="supplier">
+            <label className="checkContainer">
+            <Input type="checkbox" name="signedIn"/>
+            <span className="checkmark"></span>
+            </label>
+            <span className="ml-3 sort" onClick={this.sorting.bind(this, 'supplierA.price')}>Lowest Quote</span>
+            </th>,
+            (this.state.supp1 ? thisSupplier : null)
+        ]
+        
+return (
         <div className="bomTable">
             <Container fluid={true}>
                 <Row id="bomHead">
@@ -576,7 +447,7 @@ export class BomTable extends Component {
                             <thead>
                                 <tr className="tableCaption">
                                     <td colSpan="10" className="clr-form-2 mainCaption">ShopElect Webiste</td>
-                                    {this.supplierDataCaption}
+                                    {this.state.vendorData.map(($vData, $i) => {return this.dataCaption($i)})}
                                     <td></td>
                                     <td></td>
                                 </tr>
@@ -593,7 +464,10 @@ export class BomTable extends Component {
                                     <th>HSN</th>
                                         <th className="sort" onClick={this.sorting.bind(this, 'bcy_rate')}>Price</th>
                                     <th>Attachment</th>
-                                    {this.supplierDataHead}
+                                    {this.state.vendorData.map(($vData, $i) => {
+                                        return this.supplierDataHead;
+                                        }
+                                    )}
                                     <th>Customer Notes</th>
                                     <th>Bid Status</th>
                                 </tr>
@@ -615,14 +489,17 @@ export class BomTable extends Component {
                                                 <td><Input type="text" name={`company_sku-${$index}`} disabled={this.state.editable ? null : 'disabled'} value={$data.company_sku} onChange={this.updateBomFields.bind(this, 'company_sku', $index)}/></td>
                                                 <td><Input type="text" name={`description-${$index}`} disabled={this.state.editable ? null : 'disabled'} value={$data.description} onChange={this.updateBomFields.bind(this, 'description', $index)}/></td>
                                                 <td><Input type="number" name={`quantity-${$index}`} disabled={this.state.editable ? null : 'disabled'} value={$data.quantity} onChange={this.updateBomFields.bind(this, 'quantity', $index)}/></td>
-                                                <td>{getProp(this.state.lowestQuote[$data.line_item_id], 'GST') || $data.tax_percentage}</td>
-                                                <td>{getProp(this.state.lowestQuote[$data.line_item_id], 'HSN')}</td>
+                                                <td>{getProp(this.state.vendorData[$data.line_item_id], 'GST') || $data.tax_percentage}</td>
+                                                <td>{getProp(this.state.vendorData[$data.line_item_id], 'HSN')}</td>
                                                 <td>{this.state.currencySymbol}{$data.msrp * this.state.currencyRate}</td>
                                                 <td className="attachment">
                                                     <i className="fas fa-plus-circle"></i>
                                                     <i className="far fa-file-pdf"></i>
                                                 </td>
-                                                {this.lowestQuoteSupplier($data, $index, thisSupplier)}
+                                                {this.state.vendorData.map(($vData, $i) => {
+                                                        return this.lowestQuoteSupplier($data, $index, thisSupplier, $i);
+                                                    }
+                                                )}
                                                 <td>{$data.custNotes}</td>
                                                 <td>{$data.bidSts}</td>
                                             </tr>,
