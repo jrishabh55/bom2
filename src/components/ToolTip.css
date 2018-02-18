@@ -1,0 +1,23 @@
+.button {
+	display: inline-block;
+	background: #02b2fb;
+	padding: 7rem 39rem;
+	border-radius: 7rem;
+	font-size: 18rem;
+	font-weight: 500;
+	color: #fff;
+	cursor: pointer;
+	box-shadow: 0rem 2rem 2rem rgba(0, 0, 0, .3);
+}
+
+.full-width {
+	width: 100%;
+}
+
+.button:hover {
+	color: white;
+}
+
+.button:active {
+	box-shadow: 0 0;
+}

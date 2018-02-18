@@ -1,0 +1,51 @@
+.vendorTable thead th.sort::before, thead th.supplier .sort::before {
+    top: inherit !important;
+    bottom: 17px !important;
+}
+.vendorTable thead th.sort::after, thead th.supplier .sort::after {
+    top: inherit !important;
+    bottom: 10px !important;
+}
+
+.vendorTable table thead tr.tableCaption > td {
+    padding: 8px 0 9px 12px;
+    color: #9B9B9B !important;
+}
+
+.vendorTable .nav-tabs li{
+    color: #A3439A;
+    font-size: 11px;
+    font-weight: bold;
+    line-height: 13px;
+    background: #FFFFFF;
+    border-radius: 0 !important;
+    border: .5px solid #A3439A;
+    padding: 1px 12px;
+}
+
+.vendorTable .nav-tabs li .active {
+    color: #3C3C3C;
+    border: none;
+}
+
+.vendorTable #vendorHead {
+    padding: 10px 0 30px;
+}
+
+.vendorTable #vendorHead .form-group {
+    display: inline-block;
+    margin-bottom: 0 !important;
+}
+.vendorTable #vendorHead select {
+    width: 250px;
+    height: 30px !important;
+    margin-bottom: 0 !important
+}
+
+.vendorTable table thead tr.tableCaption > td{
+    text-align: left;
+}
+
+.vendorTable .tableFooter {
+    text-align: left;
+}

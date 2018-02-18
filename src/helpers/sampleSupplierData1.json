@@ -1,0 +1,79 @@
+{
+    "took": 0,
+    "timed_out": false,
+    "_shards": {
+        "total": 2,
+        "successful": 2,
+        "skipped": 0,
+        "failed": 0
+    },
+    "hits": {
+        "total": 3,
+        "max_score": 0,
+        "hits": []
+    },
+    "aggregations": {
+        "lowest_quotes": {
+            "doc_count_error_upper_bound": 0,
+            "sum_other_doc_count": 0,
+            "buckets": [{
+                "key": "759865000001242457",
+                "doc_count": 1,
+                "min_quotes": {
+                    "hits": {
+                        "total": 1,
+                        "max_score": null,
+                        "hits": [{
+                            "_index": "shopelect-bom-live",
+                            "_type": "759865000001242455",
+                            "_id": "759865000001242457~759865000001242344",
+                            "_score": null,
+                            "_source": {
+                                "quote": {
+                                    "time_to_ship": 10,
+                                    "HSN": "ASD23sdf",
+                                    "current_stock": 12,
+                                    "discount": 20,
+                                    "GST": 18,
+                                    "list_price": 458,
+                                    "delivery_city": "Pune",
+                                    "bid_price": 366.4
+                                }
+                            },
+                            "sort": [366.4]
+                        }]
+                    }
+                }
+            }, {
+                "key": "759865000001242459",
+                "doc_count": 1,
+                "min_quotes": {
+                    "hits": {
+                        "total": 1,
+                        "max_score": null,
+                        "hits": [{
+                            "_index": "shopelect-bom-live",
+                            "_type": "759865000001242455",
+                            "_id": "759865000001242459~759865000001242344",
+                            "_score": null,
+                            "_source": {
+                                "quote": {
+                                    "time_to_ship": 20,
+                                    "HSN": "BSS23sdf",
+                                    "current_stock": 20,
+                                    "discount": 10,
+                                    "GST": 18,
+                                    "list_price": 558,
+                                    "delivery_city": "Pune",
+                                    "bid_price": 502.2
+                                }
+                            },
+                            "sort": [502.2]
+                        }]
+                    }
+                }
+            }]
+        }
+    },
+    "_timestamp": 1518971225931
+}

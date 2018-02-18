@@ -1,0 +1,260 @@
+.bomTable #bomHead {
+    padding: 10px 0 30px;
+}
+
+.bomTable #bomHead .form-group {
+    display: inline-block;
+    margin-bottom: 0 !important;
+}
+.bomTable #bomHead select {
+    width: 250px;
+    height: 30px !important;
+    margin-bottom: 0 !important
+}
+
+.bomTable .selectCont.alt-dd:after {
+    content: '\003e';
+    transform: rotate(90deg);
+    font-size: 16px;
+    top: 4px;
+    right: 8px !important
+}
+table .checkContainer {
+    position: absolute;
+    left: 8px;
+    width: 16px !important;
+    height: 16px !important;
+    margin-bottom: 0 !important;
+}
+
+table input[type=text], table input[type=number] {
+    max-width: 250px;
+    width: 250px;
+    margin-bottom: 0 !important;
+}
+
+table tbody > tr td input[type=text], table tbody > tr td input[type=number] {
+    width: inherit !important;
+    font-size: 11px;
+    height: 24px !important;
+    padding: 1px 0 0 7px !important;
+}
+
+table tbody > tr td input[type=text]:disabled {
+    background: #FAFAFA !important;
+}
+
+#copyMPN {
+    position: relative;
+    display: inline-block;
+    height: 32px;
+}
+
+#btnMPN {
+    position: absolute;
+    color: red;
+    top: 8px;
+    right: 15px;
+    color: #A3439A;
+	font-size: 10px;
+	line-height: 14px;
+}
+
+thead .sort {
+    cursor: pointer;
+}
+
+thead th.sort::before, thead th.supplier .sort::before {
+    content: '\25bc';
+    transform: rotate(180deg);
+    position: absolute;
+    color: #A3439A;
+    right: 5px;
+    top: 13px;
+}
+thead th.sort::after, thead th.supplier .sort::after {
+    content: '\25bc';
+    position: absolute;
+    color: #A3439A;
+    right: 5px;
+    top: 20px;
+}
+
+.tableFooter {
+    text-align: right;
+    padding: 3px 24px 5px 51px !important;
+}
+
+.tableFooter .viewActivityLog {
+    color: #A3439A;
+	font-size: 10px;
+	line-height: 12px;
+    vertical-align: top;
+}
+
+.tableFooter .viewActivityLog svg {
+    vertical-align: top;
+}
+
+.tableFooter .lastAct {
+	color: #9B9B9B;
+	font-size: 11px;
+	font-style: italic;
+	line-height: 13px;
+}
+
+.bomTable .tableFooter .lastAct {
+    margin-right: 159px;
+}
+
+table .tableFooter .card-body ul {
+    display: inline-block;
+}
+
+table .tableFooter .card-body {
+    padding: 0;
+}
+
+.commentLog {
+	color: #3C3C3C;
+	font-size: 11px;
+	font-style: italic;
+    line-height: 15px !important;
+    margin-right: 118px !important;
+    margin-bottom: 9px !important;
+}
+
+.commentLog.lg-space {
+    line-height: 20px !important;
+}
+
+.commentSub {
+	color: #A3439A;
+	font-size: 10px;
+	line-height: 12px;
+}
+
+table thead tr.tableCaption > td {
+    position: relative;
+    background: #FAFAFA;
+    color: #A3439A;
+    font-size: 11px;
+    line-height: 13px;
+    text-align: right;
+    border: 1px solid #DFDFDF;
+    padding: 8px 12px 9px 0;
+}
+
+table thead tr.tableCaption > td.mainCaption {
+    padding-right: 136px !important;
+}
+
+table thead tr > th {
+    position: relative;
+    background: #FFFFFF;
+    color: #3C3C3C;
+    font-size: 11px;
+    font-weight: bold;
+    line-height: 13px;
+    text-align: center;
+    vertical-align: top !important;
+    border: 1px solid #DFDFDF;
+    padding: 13px 7px 10px !important;
+}
+
+table thead tr > th.sort{
+    padding-right: 20px !important;
+}
+
+table thead tr > th.supplier {
+    padding-right: 20px !important;
+    min-width: 100px;
+}
+
+table tbody tr:nth-of-type(odd) {
+    background: #FAFAFA;
+}
+
+table tbody tr:nth-of-type(even) {
+    background: #FFFFFF;
+    width: inherit !important;
+    max-width: inherit;
+}
+
+table tbody {
+    color: #3C3C3C;
+	font-size: 11px !important;
+	line-height: 13px !important;
+    text-align: left;
+}
+
+table tbody tr > td {
+    border: 1px solid #DFDFDF;
+    padding: 12px 7px 15px !important;
+    position: relative;
+}
+
+table tbody tr > td.stock {
+    padding: 5px 5px 5px 30px !important;
+    line-height: 12px !important;
+}
+
+table tbody .stockLeft {
+    color: #F5A623;
+}
+
+table .tableFooter input[type=text] {
+    width: 325px;
+    max-width: 325px;
+    height: 24px !important;
+    box-shadow: none;
+    padding: 4px 0 7px 7px !important;
+}
+
+table .tableFooter input[type=text]::placeholder {
+    font-size: 11px;
+    color: #9B9B9B !important;
+    line-height: 13px;
+}
+
+table .tableFooter .col {
+    padding: 0 !important;
+}
+
+table svg {
+    font-size: 14px !important;
+    color: #A3439A;
+}
+
+table .lg-width {
+    min-width: 130px;
+}
+table .md-width {
+    min-width: 90px;
+}
+
+.attachment svg {
+    margin-right: 10px;
+}
+
+.attachment .fa-file-pdf {
+    color: #DF2003;
+}
+
+table .cancel {
+    color: #df2003;
+}
+
+.bomTable .searchItems {
+    background: #ffffff;
+    box-shadow: 0 2px 10px 2px rgba(0, 0, 0, 0.5);
+    position: absolute;
+    right: 0 !important;
+}
+
+.sNo {
+    min-width: 40px !important;
+}
+.qty{
+    width: 40px !important;
+}

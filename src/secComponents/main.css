@@ -1,0 +1,246 @@
+@import url('https://fonts.googleapis.com/css?family=Lato');
+
+body {
+    font-family: Lato !important;
+    font-weight: normal !important;
+}
+
+a, a:hover, a:focus {
+    text-decoration: none;
+    color: inherit;
+}
+
+input:invalid, .is-invalid {
+    border: 1px solid #dc3545 !important;
+}
+
+.clr-primary {
+    color: #A3439A !important;
+}
+
+.clr-secondary {
+    color: #757575;
+}
+
+.clr-blue {
+    color: #346AA0 !important;
+}
+.clr-grey {
+    color: #3C3C3C !important;
+}
+
+.clr-form-1 {
+    color: #1D1D26;
+}
+
+.clr-form-2 {
+    color: #9B9B9B !important;
+}
+
+.s-bg-primary {
+    background-color: #A3439A !important;
+}
+
+.s-bg-secondary {
+    background-color: #F2F2F2;
+}
+
+.font-xl {
+    font-size: 24px;
+}
+.font-l {
+    font-size: 20px;
+}
+
+.font-lg {
+    font-size: 18px;
+}
+
+.font-md {
+    font-size: 13px;
+}
+
+.font-sm2 {
+    font-size: 12px;
+}
+
+.font-sm {
+    font-size: 11px;
+}
+
+.font-xs {
+    font-size: 10px;
+}
+
+.s-btn {
+    letter-spacing: 1px;
+    font-size: 13px;
+    padding: 8px 39px;
+}
+
+.fill-btn {
+	box-sizing: border-box;
+	border: 1px solid #A3439A;
+	border-radius: 2px;
+	background-color: #A3439A;
+	box-shadow: 0 2px 9px 0 rgba(0,0,0,0.03);
+    padding: 6px 10px;
+    color: #ffffff;
+    font-size: 12px;
+    line-height: 15px;
+}
+
+.empty-btn {
+	box-sizing: border-box;
+	border: 1px solid #A3439A;
+	border-radius: 2px;
+	background-color: #FFFFFF;
+	box-shadow: 0 2px 9px 0 rgba(0,0,0,0.03);
+    padding: 6px 10px;
+    color: #A3439A;
+    font-size: 11px;
+    line-height: 13px;
+}
+
+.empty-input {
+    box-sizing: border-box !important;
+	border: 1px solid #A3439A !important;
+	border-radius: 2px !important;
+	box-shadow: 0 2px 9px 0 rgba(0,0,0,0.03) !important;
+    padding: 6px 25px 6px 10px !important;
+    color: #A3439A !important;
+    font-size: 11px !important;
+    line-height: 13px !important;
+    width: auto !important;
+}
+
+.verLine {
+    border-left: 2px solid #C1C1C1;
+    position: absolute;
+    left: 50%;
+    height: 14px;
+}
+
+.bomTable .displayTable .lg-space {
+    line-height: 20px !important;
+}
+
+hr {
+    background-color: #DDDDDD;
+    margin-top: 25px;
+    margin-bottom: 15px;
+}
+
+.checkContainer {
+    display: block;
+    float: left !important;
+    position: relative;
+    cursor: pointer;
+    margin-left: 0 !important;
+}
+.checkContainer input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+}
+.checkmark {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 16px;
+    width: 16px;
+    background-color: #FFFFFF;
+    border: 1px solid #A3439A;
+}
+
+.checkContainer input:checked~.checkmark {
+    background-color: #A3439A;
+}
+.checkmark:after {
+    content: "";
+    position: absolute;
+    display: none;
+}
+
+.checkContainer input:checked~.checkmark:after {
+    display: block;
+}
+
+.checkContainer .checkmark:after {
+    left: 4px;
+    top: 1px;
+    width: 5px;
+    height: 9px;
+    border: solid #ffffff;
+    border-width: 0 2px 2px 0;
+    -webkit-transform: rotate(45deg);
+    -ms-transform: rotate(45deg);
+    transform: rotate(45deg);
+}
+
+Form {
+    padding: 0 10px;
+    margin: 0 auto;
+}
+
+.login .form-group, .signUp .form-group {
+    width: 300px;
+    margin: 0 auto;
+    max-width: 300px;
+}
+
+input, select {
+    height: 32px !important;
+    border: 1px solid #DFDFDF !important;
+    border-radius: 1px !important;
+    background-color: #FFFFFF !important;
+    box-shadow: inset 0 0 1px 2px rgba(0, 0, 0, 0.03);
+    padding: 0 !important;
+    padding-left: 8px !important;
+    padding-bottom: 6px !important;
+    margin-bottom: 19px !important;
+}
+
+select {
+    color: #9B9B9B !important;
+    font-size: 13px !important;
+    line-height: 14px !important;
+    padding: 6px 0 6px 8px !important;
+}
+
+input[type=checkbox] {
+    width: 14px !important;
+    height: 14px !important;
+}
+
+.selectCont {
+    position: relative;
+}
+
+.selectCont:after {
+    content: '\25bc';
+    position: absolute;
+    font-size: 13px;
+    color: #A3439A;
+    right: 13px;
+    top: 6px;
+}
+
+.form-check-input {
+    margin-top: 1px;
+    margin-left: 0;
+}
+
+input::placeholder, option {
+    color: #9B9B9B !important;
+    font-size: 13px;
+}
+
+Label {
+    margin-left: 8px !important;
+    margin-bottom: 9px !important;
+    color: rgba(29, 29, 38, 0.4) !important;
+    font-size: 10px;
+    letter-spacing: 1px;
+    padding-top: 0 !important;
+}

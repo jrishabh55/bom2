@@ -1,0 +1,19 @@
+.searchHeader {
+    background: #fff;
+    padding: 7px 0;
+}
+
+.searchHeader .logo img {
+    width: 135px;
+    height: 36px;
+}
+
+.searchHeader input[type=text]{
+    width: 500px !important;
+    height: 30px !important;
+    margin-bottom: 0 !important;
+}
+
+.searchHeader input::placeholder {
+    font-size: 12px;
+}
