@@ -70,6 +70,7 @@ export class VendorTable extends Component {
         this.currTableData = _.orderBy(this.tableData, 'sNo', 'asc');
         this.allBom;
         this.bomIndex = 0;
+        this.bomsToFetch = 10;
         this.state = {
             currData: [],
             currDataDetails: [],
@@ -81,32 +82,25 @@ export class VendorTable extends Component {
     }
 
     componentDidMount() {
-        if (this.vendorId !== 'new') {
-            ApiService.get(`/bom`).then(res => {
-                console.log(res.estimates[0].estimate_id)
-                this.setState({ bomList: res.estimates },()=>console.log(this.state.bomList));
-                this.fetchBom();
-            })
-            ApiService.get(`/customer/${VendorContract.getCustomerId}/bom/${this.vendorId}`).then(res => {
-                this.setState({currDataDetails: res.estimate},() => console.log(this.state.currDataDetails))
-            })
-        }
-        else {
-
-        }
+        ApiService.get(`/bom`).then(res => {
+            console.log(res.estimates[0].estimate_id)
+            this.setState({ bomList: res.estimates },()=>console.log(this.state.bomList));
+            this.fetchBom();
+        })
     }
 
     fetchBom() {
-        for(let i = (this.bomIndex); i < (this.bomIndex + 10); i++) {
-            console.log(this.state.currData)
+        for(let i = (this.bomIndex); i < (this.bomIndex + this.bomsToFetch); i++) {
+            const url = `/customer/${VendorContract.getCustomerId}/bom/${this.state.bomList[i][`estimate_id`]}`;
             let data = this.state.currData;
-            ApiService.get(`/customer/${VendorContract.getCustomerId}/bom/${this.state.bomList[i][`estimate_id`]}`).then(res => {
-                console.log(res.estimate.line_items)
+            let dataDetails = this.state.currDataDetails;
+            ApiService.get(url).then(res => {
                 data.push(res.estimate.line_items)
-                console.log(data)
-                this.setState({currData: data},() => console.log(this.state.currData))
+                dataDetails.push(res.estimate)
+                this.setState({currData: data, currDataDetails: dataDetails})
             })
         }
+        this.bomIndex += this.bomsToFetch;
     }
 
     edit() {
@@ -224,24 +218,23 @@ export class VendorTable extends Component {
                             <tbody>
                             {
                                 this.state.currData.map(($data2, $i) => {
-                                    $data2.map(($data, $index) => {
-                                        console.log($data.description)
+                                    return $data2.map(($data, $index) => {
                                         return ([<tr className="tableRow">
                                         <td><i className="fas fa-times cancel"></i></td>
                                         <td><i className="fas fa-phone"></i></td>
                                         <td><span onClick={this.descModal.bind(this,$data.description)} data-toggle="modal" data-target="#descModal">{$data.description.substr(0,50) + '...' || '-'}</span></td>
                                         <td>
-                                            {this.state.currDataDetails.estimate_id || '-'}<br />
-                                            <span className="clr-form-2 font-xs">{this.state.currDataDetails.date || '-'}</span>
+                                            {this.state.currDataDetails[$i].estimate_id || '-'}<br />
+                                            <span className="clr-form-2 font-xs">{this.state.currDataDetails[$i].date || '-'}</span>
                                         </td>
-                                        <td><span className="clr-primary">{this.state.currDataDetails.customer_name || '-'} <i class="float-right fas fa-info-circle"></i></span></td>
+                                        <td><span className="clr-primary">{this.state.currDataDetails[$i].customer_name || '-'} <i class="float-right fas fa-info-circle"></i></span></td>
                                         <td>{'-'}</td>
                                         <td><Input type="text" disabled={this.state.editable ? null : 'disabled'} defaultValue={'-'} /></td>
                                         <td><Input type="text" disabled={this.state.editable ? null : 'disabled'} defaultValue={$data.product_type||'-'} /></td>
                                         <td>{$data.quantity || '-'}</td>
                                         <td><Input id={`stock-${$i}-${$index}`} type="number" disabled={this.state.editable ? null : 'disabled'} defaultValue={'-'} /></td>
                                         <td><Input id={`gst-${$i}-${$index}${$index}`} type="number" disabled={this.state.editable ? null : 'disabled'} defaultValue={$data.tax_percentage||'-'} /></td>
-                                        <td><Input id={`hsn-${$i}-${$index}${$index}`} type="text" disabled={this.state.editable ? null : 'disabled'} defaultValue={'--'} /></td>
+                                        <td><Input id={`hsn-${$i}-${$index}${$index}`} type="text" disabled={this.state.editable ? null : 'disabled'} defaultValue={$data.hsn_or_sac} /></td>
                                         <td><Input type="text" disabled={this.state.editable ? null : 'disabled'} defaultValue={$data.item_total || '-'} /></td>
                                         <td><Input id={`discount-${$i}-${$index}${$index}`} type="number" disabled={this.state.editable ? null : 'disabled'} defaultValue={$data.discount||'-'} /></td>
                                         <td><Input id={`timeToShip-${$i}-${$index}${$index}`} type="number" disabled={this.state.editable ? null : 'disabled'} defaultValue={'-'} /></td>

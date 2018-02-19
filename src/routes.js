@@ -6,7 +6,6 @@ import { Login } from './secComponents/Login/Login';
 import { BomTable } from './secComponents/BomTable/BomTable';
 import { BomList } from './secComponents/BomList/BomList';
 import { VendorTable } from './secComponents/VendorTable/VendorTable';
-import { VendorList } from './secComponents/VendorList/VendorList';
 import { CallBack } from './secComponents/CallBack/CallBack';
 import { Private } from './Guards/Private/Private.js';
 
@@ -20,8 +19,8 @@ export const Routes = () => (
 			<Private>
 				<Route exact path="/bom" component={ BomList } />
 				<Route exact path="/bom/:bomId" component={ BomTable } />
-				<Route exact path="/vendor" component={ VendorList } />
-				<Route exact path="/vendor/:vendorId" component={ VendorTable } />
+				<Route exact path="/vendor" component={ VendorTable } />
+				<Route exact path="/admin" component={ VendorTable } />
 			</Private>
 		</Switch>
 	</Router>
