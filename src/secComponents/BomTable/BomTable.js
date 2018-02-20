@@ -7,10 +7,7 @@ import { AuthService } from '../../services/auth.service';
 import { StorageService } from '../../services/storage.service';
 import { BomContract } from '../../services/bom.contract';
 import { currencyService } from '../../services/currency.service';
-import Lowest from '../../helpers/sampleLowest.json';
-import Vendor1 from '../../helpers/sampleSupplierData1.json';
-import Vendor2 from '../../helpers/sampleSupplierData2.json';
-import Vendor3 from '../../helpers/sampleSupplierData3.json';
+import toastr from 'toastr';
 import { getProp } from '../../helpers';
 
 import '../main.css';
@@ -94,6 +91,7 @@ export class BomTable extends Component {
             let prefVend = StorageService.getItem('prefVendors');
             prefVend = prefVend.trim().split(',');
             ApiService.get(`/customer/${this.getContactId()}/bom/${this.bomId}`).then(res => {
+                console.log(res)
                 this.currBomData = res.estimate.line_items;
                 console.log(this.currBomData)
                 this.setState({currData: this.currBomData}, () => {
@@ -209,7 +207,7 @@ export class BomTable extends Component {
 
         ApiService.post(`/customer/${this.getContactId()}/bom`, data).then(res => {
             if (res.message === "The estimate has been created.") {
-                alert(`${res.message}: ${res.estimate.estimate_id}`);
+                toastr.success(`${res.message}: ${res.estimate.estimate_id}`);
                 this.props.history.push('/bom');
             } else {
                 alert(res.message);
@@ -266,7 +264,8 @@ export class BomTable extends Component {
         this.setState({currData: newData})
         console.log(this.state.currData)
         this.state.currData.map(($data, $i) => {
-            amount = amount + ($data.quantity * ($data.rate || $data._source.msrp));
+            console.log($data.rate || $data._source.msrp, $data.quantity)
+            amount = amount + (($data.quantity || 0) * ($data.rate || $data._source.msrp));
             this.setState({orderAmount: amount})
         })
     }

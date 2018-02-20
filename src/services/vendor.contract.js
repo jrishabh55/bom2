@@ -5,6 +5,7 @@ class VendorContract {
     }
 
     getCustomerId() {
+        console.log(this.customerId)
         return this.customerId;
     }
 
