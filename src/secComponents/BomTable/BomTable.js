@@ -114,7 +114,7 @@ export class BomTable extends Component {
                                     if(qRes.hits.hits.length > 0) {
                                         data.push(qRes);
                                         this.setState({vendorQuotes: data});
-                                        this.quotedCurrData($i);
+                                        this.quotedCurrData(($i + 1));
                                     }
                                 })
                             })
