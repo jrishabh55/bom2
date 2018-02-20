@@ -6,7 +6,7 @@ import '../main.css';
 export class Layout extends Component {
 
     render() {
-        console.log(process.env.LOCAL);
+        console.log(process.env);
         return (<div className="layout">
             <Container fluid="true">
                     <Header/>
