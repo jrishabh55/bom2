@@ -85,15 +85,13 @@ export class BomTable extends Component {
     componentDidMount() {
         if (this.bomId !== 'new') {
             ApiService.get(`/contacts/${this.getContactId()}`).then(res => {
-                console.log(res)
                 this.userDetails = res.contact;
             })
             let prefVend = StorageService.getItem('prefVendors');
             prefVend = prefVend.trim().split(',');
             ApiService.get(`/customer/${this.getContactId()}/bom/${this.bomId}`).then(res => {
-                console.log(res)
+                this.setState({bom_title: res.estimate.custom_field_hash.cf_title});
                 this.currBomData = res.estimate.line_items;
-                console.log(this.currBomData)
                 this.setState({currData: this.currBomData}, () => {
                     let data = this.state.vendorQuotes;
                     this.calOrderAmount();
@@ -134,11 +132,9 @@ export class BomTable extends Component {
         let quote;
         let vData = this.state.vendorQuotes;
         let temp = this.state.vendorData;
-        console.log(vData[temp.length].aggregations.lowest_quotes.buckets)
         if($i == 0) {
             quote = vData[temp.length].aggregations.lowest_quotes.buckets.reduce((ittr, item) => {
                 ittr[item.key] = item.min_quotes.hits.hits[0]._source.quote;
-                console.log(ittr)
                 return ittr;
             }, {});
         }
@@ -240,12 +236,15 @@ export class BomTable extends Component {
             }),
             title: this.state.bom_title
         }
-        console.log(data)
+        ApiService.post(`/customer/${StorageService.getItem('contactId')}/bom/${this.bomId}`, data).then(res => {
+            console.log(res)
+            toastr.success(res.message);
+            this.props.history.push('/bom');
+        });
     }
 
     appendInput($index) {
         let currTableData = this.state.currData;
-        console.log(this.state.searchProd[$index])
         currTableData.push(this.state.searchProd[$index]);
         this.setState({ currData: currTableData });
     }
@@ -283,12 +282,9 @@ export class BomTable extends Component {
         let amount = 0;
         let value = $(`[name=quantity-${$index}]`)[0].value;
         let newData = this.state.currData;
-        console.log(newData)
         newData[$index]['quantity'] = value;
         this.setState({currData: newData})
-        console.log(this.state.currData)
         this.state.currData.map(($data, $i) => {
-            console.log($data.rate || $data._source.msrp, $data.quantity)
             amount = amount + (($data.quantity || 0) * ($data.rate || $data._source.msrp));
             this.setState({orderAmount: amount})
         })
@@ -323,7 +319,6 @@ export class BomTable extends Component {
 
     lowestQuoteSupplier($data, $index, thisSupplier, $i) {
         let a = $data;
-        console.log(this.state.vendorData[$i][$data.line_item_id])
         return (this.supplierDataBody = [
             <td className="stock">
                 <label className="checkContainer">
