@@ -22,7 +22,7 @@ export class Header extends Component {
             </Row>,
             <Row className="searchHeader align-items-center">
                 <Col md="4">
-                    <span className="logo"><img src="/assets/media/logo.png" /></span>
+                    <span className="logo"><img src="/assets/media/logo.jpg" /></span>
                 </Col>
                 <Col md>
                     <input type="text" name='search' placeholder="Search by Part no or keyword" />

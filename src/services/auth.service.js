@@ -32,7 +32,6 @@ class AuthService {
     }
 
     logout() {
-        
         return StorageService.clear();
     }
 }
