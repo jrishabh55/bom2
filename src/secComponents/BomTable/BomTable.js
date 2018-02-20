@@ -258,14 +258,15 @@ export class BomTable extends Component {
     }
 
     calOrderAmount($index = 0) {
-        console.log($index)
         let amount = 0;
         let value = $(`[name=quantity-${$index}]`)[0].value;
         let newData = this.state.currData;
-        newData[$index]._source ? newData[$index]._source['quantity'] : newData[$index]['quantity'] = value;
+        console.log(newData)
+        newData[$index]['quantity'] = value;
         this.setState({currData: newData})
+        console.log(this.state.currData)
         this.state.currData.map(($data, $i) => {
-            amount = amount + ($data.quantity * $data.rate);
+            amount = amount + ($data.quantity * ($data.rate || $data._source.msrp));
             this.setState({orderAmount: amount})
         })
     }
