@@ -3,13 +3,16 @@ import { StorageService } from './storage.service';
 import toastr from 'toastr';
 
 class Auth0 {
-    auth0 = new auth0.WebAuth({
-        domain: 'shopelect.auth0.com',
-        clientID: 'Ppfj1JyyG8smHdYi2R1gPqSSCALD3F0L',
-        redirectUri: 'https://bomui.herokuapp.com/callback',
-        audience: 'https://shopelect.auth0.com/api/v2/',
-        responseType: 'token'
-    });
+
+    constructor() {
+        this.auth0 = new auth0.WebAuth({
+            domain: 'shopelect.auth0.com',
+            clientID: 'Ppfj1JyyG8smHdYi2R1gPqSSCALD3F0L',
+            redirectUri: 'https://bomui.herokuapp.com/callback',
+            audience: 'https://shopelect.auth0.com/api/v2/',
+            responseType: 'token'
+        });
+    }
 
     login(email, code) {
         console.log(email, code)
