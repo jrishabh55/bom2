@@ -1,12 +1,11 @@
 import auth0 from 'auth0-js';
 import { StorageService } from './storage.service';
-import * as toastr from 'toastr';
 
 class Auth0 {
     auth0 = new auth0.WebAuth({
         domain: 'shopelect.auth0.com',
         clientID: 'Ppfj1JyyG8smHdYi2R1gPqSSCALD3F0L',
-        redirectUri: 'http://localhost:3000/callback',
+        redirectUri: 'https://bomui.herokuapp.com/callback',
         audience: 'https://shopelect.auth0.com/api/v2/',
         responseType: 'token'
     });
@@ -22,7 +21,6 @@ class Auth0 {
             if (err.statusCode === 400) {
                 alert('Invalid code entered');
             }
-            
             console.log(res);
         });
     }
