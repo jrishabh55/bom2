@@ -188,8 +188,8 @@ export class BomTable extends Component {
                     "item_order": $index,
                     "bcy_rate": $data._source.msrp,
                     "rate": $data._source.msrp,
-                    "quantity": $data.quantity || qty,
-                    "item_total": this.state.orderAmount,
+                    "quantity": $data.quantity,
+                    "item_total": (($data.quantity || 0) * ($data.rate || $data._source.msrp)),
                     "item_custom_fields": [
                         {
                             "label": "Customer Manufacturer Part No",
@@ -210,13 +210,37 @@ export class BomTable extends Component {
                 toastr.success(`${res.message}: ${res.estimate.estimate_id}`);
                 this.props.history.push('/bom');
             } else {
-                alert(res.message);
+                toastr.error(res.message);
             }
         });
     }
 
     updateOrder() {
-        alert('update logic');
+        let data = {
+            items: this.state.currData.map(($data, $index) => {
+                let qty = $(`[name=quantity-${$index}]`)[0].value;
+                return ({
+                    "description": $data.description,
+                    "item_order": $index,
+                    "bcy_rate": $data.bcy_rate,
+                    "rate": $data.msrp || $data.rate,
+                    "quantity": $data.quantity,
+                    "item_total": $data.item_total,
+                    "item_custom_fields": [
+                        {
+                            "label": "Customer Manufacturer Part No",
+                            "value": $data.item_custom_fields[0].value
+                        },
+                        {
+                            "label": "Customer Manufacturer",
+                            "value": $data.item_custom_fields[1].value
+                        }
+                    ]
+                });
+            }),
+            title: this.state.bom_title
+        }
+        console.log(data)
     }
 
     appendInput($index) {
@@ -344,6 +368,10 @@ export class BomTable extends Component {
         )
     }
 
+    updateBomTitle() {
+        this.setState({bom_title: $('#bomTitle')[0].value})
+    }
+
 
 
     render() {
@@ -405,7 +433,7 @@ return (
                     </Col>
                     <div className="clearfix"/>
                     <Col md="2">
-                        <span className="font-xl clr-grey"><Input id="bomTitle" type="text" disabled={this.state.editable ? null : 'disabled'} defaultValue={this.state.bom_title}/></span>
+                        <span className="font-xl clr-grey"><Input id="bomTitle" type="text" disabled={this.state.editable ? null : 'disabled'} value={this.state.bom_title} onChange={this.updateBomTitle.bind(this)} /></span>
                     </Col>
                     <Col md="md" className="float-right">
                         <div className="float-right">
