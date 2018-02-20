@@ -1,5 +1,6 @@
 import auth0 from 'auth0-js';
 import { StorageService } from './storage.service';
+import toastr from 'toastr';
 
 class Auth0 {
     auth0 = new auth0.WebAuth({
@@ -19,7 +20,7 @@ class Auth0 {
             email
         }, (err, res) => {
             if (err.statusCode === 400) {
-                alert('Invalid code entered');
+                toastr.error('Invalid code entered');
             }
             console.log(res);
         });
@@ -35,7 +36,7 @@ class Auth0 {
             phoneNumber: `+${phoneNumber}`
         }, (err, res) => {
             if (err.statusCode === 400) {
-                alert('Invalid code entered');
+                toastr.error('Invalid code entered');
             }
             console.log(res);
         });

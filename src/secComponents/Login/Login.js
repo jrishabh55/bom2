@@ -17,7 +17,7 @@ export class Login extends Component {
         this.phoneNumber = 0;
         this.otp = 0;
         this.email = '';
-        this.state = { loginType: 'email' };
+        this.state = { loginType: '' };
         console.log(env('AUTH0_AUDIENCE', 'not_found'), process.env);
 
     }
@@ -28,7 +28,17 @@ export class Login extends Component {
     }
 
     doLogin() {
-        this.state.loginType === 'sms' ? Auth0.loginWithSms(this.phoneNumber, this.otp) : Auth0.login(this.email, this.otp);
+        if(this.otp.length === 4) {
+            if(this.state.loginType === 'sms') {
+                Auth0.loginWithSms(this.phoneNumber, this.otp)
+            }
+            else if(this.state.loginType === 'email') {
+                Auth0.login(this.email, this.otp);
+            }
+        }
+        else {
+            toastr.error('Enter 4 digit OTP');
+        }
     }
 
     sendOtp() {
@@ -38,17 +48,17 @@ export class Login extends Component {
         if (reEmail.test($val)){
             this.setState({loginType: 'email'},() => {} );
             this.email = $val;
-            $('input[name=otp], #signinBtn').removeAttr('disabled').removeClass('disabled');
             AuthService.checkUser(this.email, 'email').then(res => {
                 if( res.success ) {
                     console.log(res)
                     this.setContactId(res.contactId);
                     Auth0.sendMail(this.email).then(res => {
+                        $('input[name=otp], #signinBtn').removeAttr('disabled').removeClass('disabled');
                         toastr.success('OTP has been sent')
                     });
                 }
                 else {
-                    alert('Server: Invalid Email')
+                    toastr.error('User does not exist')
                 }
             });
 
@@ -56,21 +66,21 @@ export class Login extends Component {
         else if (reMobile.test($val)) {
             this.setState({loginType: 'sms'},() => {} );
             this.phoneNumber = $val;
-            $('input[name=otp], #signinBtn').removeAttr('disabled').removeClass('disabled');
             AuthService.checkUser(this.phoneNumber, 'mobile').then(res => {
                 if( res.success ) {
                     this.setContactId(res.contactId);
                     Auth0.sendSms(this.phoneNumber).then(res => {
+                        $('input[name=otp], #signinBtn').removeAttr('disabled').removeClass('disabled');
                         toastr.success('OTP has been sent')
                     });
                 }
                 else {
-                    alert('Server: Invalid Number')
+                    toastr.error('User does not exist')
                 }
             });
         }
         else{
-            alert('Regex: Email and Mobile No invalid')
+            toastr.error('Email or Mobile No invalid')
         }
     }
 
@@ -103,9 +113,9 @@ export class Login extends Component {
                                     <p className="text-right clr-primary font-sm"><a onClick={this.sendOtp.bind(this)} href="javascript:void()">Send OTP</a></p>
                                     </FormGroup>
                                     <FormGroup>
-                                        <Input type="text" name="otp" onChange={this.fetchOtp.bind(this)} placeholder="Enter Your OTP" />
+                                        <Input type="text" name="otp" disabled onChange={this.fetchOtp.bind(this)} placeholder="Enter Your OTP" />
                                     </FormGroup>
-                                    <FormGroup>
+                                    {/*<FormGroup>
                                     <label className="checkContainer">
                                         <Input type="checkbox" name="signedIn" />
                                         <span className="checkmark"></span>
@@ -113,7 +123,7 @@ export class Login extends Component {
                                         <Label className="font-sm clr-primary">
                                             <span className="ml-3">Keep me signed in </span>
                                         </Label>
-                                    </FormGroup>
+                                    </FormGroup>*/}
                                     <div className="clearfix">
                                         <Row className="justify-content-center">
                                             <Button id="signinBtn" onClick={this.doLogin.bind(this)} className="mt-4 s-bg-primary s-btn">SIGN IN</Button>

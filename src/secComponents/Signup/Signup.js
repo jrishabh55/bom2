@@ -15,10 +15,11 @@ import {AuthService} from '../../services/auth.service';
 import {ApiService} from '../../services/api.service';
 import '../main.css';
 import './signup.css';
+import toastr from 'toastr';
 
 export class SignUp extends Component {
 
-    
+
     constructor(props) {
         super(props);
         this.signupHeight = '300';
@@ -380,10 +381,10 @@ export class SignUp extends Component {
             }
             ApiService.post('/contacts', data).then(res => {
 
-                console.log(data)
-                console.log(res)
+                if(res.code == 3062) {
+                    toastr.error('Vendor Already Exist')
+                }
                 if(res.code == 0) {
-                    console.log(vendorId)
                     vendorId.push(res.contact.contact_id);
                     console.log(vendorId)
                     if(vendorId.length == this.state.vendorData.length) {
@@ -393,7 +394,6 @@ export class SignUp extends Component {
                         if (!this.validateScreen()) {
                             return false;
                         }
-                        // e.target.setAttribute('disabled', true);
 
                         AuthService.register({
                             contact_name: this.getFormField('name'),
@@ -427,7 +427,7 @@ export class SignUp extends Component {
                                     value: vendorId
                                 }
                             ]
-                        }).then(response => alert(response.message)).catch(error => alert(error.message))
+                        }).then(response => toastr.success(response.message)).catch(error => toastr.error(error.message))
                     }
                 }
             })
