@@ -193,32 +193,32 @@ export class VendorTable extends Component {
                     <div className="detailBody">
                         <div className="detailGroup">
                             <Label>YOUR COMPANY NAME</Label>
-                            <p>{this.state.manuDetails.customer_name}</p>
+                            <p>{this.state.manuDetails.contact_name}</p>
                             <hr />
                         </div>
                         <div className="detailGroup">
-                            <Label>CUSSTOMER PHONE NUMBER</Label>
-                            <p>ABC Corp</p>
+                            <Label>CUSTOMER PHONE NUMBER</Label>
+                            <p>{this.state.manuDetails.contact_persons ? this.state.manuDetails.contact_persons[0].phone || '-' : '-'}</p>
                             <hr />
                         </div>
                         <div className="detailGroup">
-                            <Label>YOUR COMPANY NAME</Label>
-                            <p>ABC Corp</p>
+                            <Label>CUSTOMER TYPE</Label>
+                            <p>{this.state.manuDetails.cf_type_of_company || '-'}</p>
                             <hr />
                         </div>
                         <div className="detailGroup">
-                            <Label>YOUR COMPANY NAME</Label>
-                            <p>ABC Corp</p>
+                            <Label>CUSTOMER STATE</Label>
+                            <p>{this.state.manuDetails.shipping_address ? this.state.manuDetails.shipping_address.state || '-' : '-'}</p>
                             <hr />
                         </div>
                         <div className="detailGroup">
-                            <Label>YOUR COMPANY NAME</Label>
-                            <p>ABC Corp</p>
+                            <Label>PURPOSE</Label>
+                            <p>{this.state.manuDetails.cf_purpose || '-'}</p>
                             <hr />
                         </div>
                         <div className="detailGroup">
-                            <Label>YOUR COMPANY NAME</Label>
-                            <p>ABC Corp</p>
+                            <Label>TENTATIVE ORDER DATE</Label>
+                            <p>{this.state.manuDetails.cf_tentative_order_date || '-'}</p>
                         </div>
                     </div>
                 </div>
