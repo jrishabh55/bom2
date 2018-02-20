@@ -10,6 +10,7 @@ import { currencyService } from '../../services/currency.service';
 import Lowest from '../../helpers/sampleLowest.json';
 import Vendor1 from '../../helpers/sampleSupplierData1.json';
 import Vendor2 from '../../helpers/sampleSupplierData2.json';
+import Vendor3 from '../../helpers/sampleSupplierData3.json';
 import { getProp } from '../../helpers';
 
 import '../main.css';
@@ -102,25 +103,24 @@ export class BomTable extends Component {
                 this.setState({currData: this.currBomData}, () => {
                     let data = this.state.vendorQuotes;
                     this.orderAmount();
-                    // ApiService.get(`/customer/${this.getContactId()}/bom/${this.bomId}/vendor/lowest_quotes`).then(res2 => {
-                    //     this.quotedCurrData(res2);
-                    //     console.log(res2)
-                    // });
-                    console.log(Lowest)
-                    data.push(Lowest);
-                    this.setState({vendorQuotes: data})
-                    this.quotedCurrData(this.state.vendorQuotes);
-                    data = this.state.vendorQuotes;
-                    data.push(Vendor1)
-                    this.setState({vendorQuotes: data})
-                    this.quotedCurrData(this.state.vendorQuotes);
-                    data = this.state.vendorQuotes;
-                    data.push(Vendor2)
-                    this.setState({vendorQuotes: data})
-                    this.quotedCurrData(this.state.vendorQuotes);
-                    // prefVend.map(($vend, $i) => {
-                    //     ApiService.get(`/customer/${this.getContactId()}/bom/${this.bomId}/vendor/${$vend}`).then(vend => console.log('vend',vend))
-                    // })
+                    ApiService.get(`/customer/${this.getContactId()}/bom/${this.bomId}/vendor/lowest_quotes`).then(lowest => {
+                        if( lowest.aggregations.lowest_quotes.buckets.length > 0 ) {
+                            data.push(lowest);
+                            this.setState({vendorQuotes: data})
+                            this.quotedCurrData(0);
+                            prefVend.map(($vend, $i) => {
+                                data = this.state.vendorQuotes;
+                                ApiService.get(`/customer/${this.getContactId()}/bom/${this.bomId}/vendor/${$vend}`).then(qRes => {
+                                    if(qRes.hits.hits.length > 0) {
+                                        data.push(qRes);
+                                        this.setState({vendorQuotes: data});
+                                        this.quotedCurrData($i);
+                                    }
+                                })
+                            })
+                        }
+                    });
+
                 });
             });
             currencyService.currencyData().then(res => {
@@ -136,31 +136,27 @@ export class BomTable extends Component {
 
     }
 
-    quotedCurrData() {
+    quotedCurrData($i) {
+        let quote;
         let vData = this.state.vendorQuotes;
         let temp = this.state.vendorData;
-        const quote = vData[temp.length].aggregations.lowest_quotes.buckets.reduce((ittr, item) => {
-            ittr[item.key] = item.min_quotes.hits.hits[0]._source.quote;
-            return ittr;
-        }, {});
+        console.log(vData[temp.length].aggregations.lowest_quotes.buckets)
+        if($i == 0) {
+            quote = vData[temp.length].aggregations.lowest_quotes.buckets.reduce((ittr, item) => {
+                ittr[item.key] = item.min_quotes.hits.hits[0]._source.quote;
+                console.log(ittr)
+                return ittr;
+            }, {});
+        }
+        else {
+            quote = vData[temp.length].hits.hits.reduce((ittr, item) => {
+                ittr[item.key] = item._source;
+                return ittr;
+            }, {});
+        }
         temp.push(quote);
         this.setState({ vendorData: temp });
     }
-
-    // quotedCurrData() {
-    //     let newData = this.state.currData;
-    //     this.state.currData.map(($data, $index) => {
-    //         $data = $data._source || $data;
-    //         let lowQuote = this.state.lowestQuote.filter(quote => {
-    //             return quote.key == $data.line_item_id;
-    //         })
-    //         if (lowQuote.length > 0) {
-    //             newData[$index].quote = lowQuote[0].min_quotes.hits.hits[0]._source.quote;
-    //         }
-    //         else {}
-    //     })
-    //     this.setState({currData: newData});
-    // }
 
     getContactId() {
         return AuthService.user().id;
@@ -310,7 +306,8 @@ export class BomTable extends Component {
     }
 
     lowestQuoteSupplier($data, $index, thisSupplier, $i) {
-
+        let a = $data;
+        console.log(this.state.vendorData[$i][$data.line_item_id])
         return (this.supplierDataBody = [
             <td className="stock">
                 <label className="checkContainer">

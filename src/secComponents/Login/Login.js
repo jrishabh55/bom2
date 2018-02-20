@@ -61,7 +61,7 @@ export class Login extends Component {
                 if( res.success ) {
                     this.setContactId(res.contactId);
                     Auth0.sendSms(this.phoneNumber).then(res => {
-                        alert("OTP Has been sent");
+                        toastr.success('OTP has been sent')
                     });
                 }
                 else {

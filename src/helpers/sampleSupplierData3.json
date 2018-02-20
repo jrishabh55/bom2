@@ -17,7 +17,7 @@
             "doc_count_error_upper_bound": 0,
             "sum_other_doc_count": 0,
             "buckets": [{
-                "key": "759865000001256057",
+                "key": "759865000001242457",
                 "doc_count": 1,
                 "min_quotes": {
                     "hits": {
@@ -36,7 +36,7 @@
                                     "discount": 20,
                                     "GST": 18,
                                     "list_price": 458,
-                                    "delivery_city": "Pune",
+                                    "delivery_city": "Delhi",
                                     "bid_price": 366.4
                                 }
                             },
@@ -45,7 +45,7 @@
                     }
                 }
             }, {
-                "key": "759865000001256059",
+                "key": "759865000001242459",
                 "doc_count": 1,
                 "min_quotes": {
                     "hits": {
@@ -58,13 +58,13 @@
                             "_score": null,
                             "_source": {
                                 "quote": {
-                                    "time_to_ship": 20,
-                                    "HSN": "BSS23sdf",
-                                    "current_stock": 20,
+                                    "time_to_ship": 30,
+                                    "HSN": "CSS23sdf",
+                                    "current_stock": 30,
                                     "discount": 10,
                                     "GST": 18,
                                     "list_price": 558,
-                                    "delivery_city": "Mumbai",
+                                    "delivery_city": "Chennai",
                                     "bid_price": 502.2
                                 }
                             },
