@@ -31,6 +31,7 @@ export class BomTable extends Component {
         this.saveBtn;
         this.quantity;
         this.totalAmount = [];
+        this.userDetails;
         this.currTableData;
         this.supplierDataCaption = '';
         this.supplierDataBody = '';
@@ -90,13 +91,15 @@ export class BomTable extends Component {
 
     componentDidMount() {
         if (this.bomId !== 'new') {
+            ApiService.get(`/contacts/${this.getContactId()}`).then(res => {
+                console.log(res)
+                this.userDetails = res.contact;
+            })
             let prefVend = StorageService.getItem('prefVendors');
             prefVend = prefVend.trim().split(',');
             ApiService.get(`/customer/${this.getContactId()}/bom/${this.bomId}`).then(res => {
                 this.currBomData = res.estimate.line_items;
-                console.log(res)
                 this.setState({currData: this.currBomData}, () => {
-                    console.log(this.state.currData[0]['item_custom_fields'][0].value_formatted)
                     let data = this.state.vendorQuotes;
                     this.orderAmount();
                     // ApiService.get(`/customer/${this.getContactId()}/bom/${this.bomId}/vendor/lowest_quotes`).then(res2 => {
@@ -105,15 +108,15 @@ export class BomTable extends Component {
                     // });
                     console.log(Lowest)
                     data.push(Lowest);
-                    this.setState({vendorQuotes: data}, ()=>console.log(this.state.vendorQuotes))
+                    this.setState({vendorQuotes: data})
                     this.quotedCurrData(this.state.vendorQuotes);
                     data = this.state.vendorQuotes;
                     data.push(Vendor1)
-                    this.setState({vendorQuotes: data}, ()=>console.log(this.state.vendorQuotes))
+                    this.setState({vendorQuotes: data})
                     this.quotedCurrData(this.state.vendorQuotes);
                     data = this.state.vendorQuotes;
                     data.push(Vendor2)
-                    this.setState({vendorQuotes: data}, ()=>console.log(this.state.vendorQuotes))
+                    this.setState({vendorQuotes: data})
                     this.quotedCurrData(this.state.vendorQuotes);
                     // prefVend.map(($vend, $i) => {
                     //     ApiService.get(`/customer/${this.getContactId()}/bom/${this.bomId}/vendor/${$vend}`).then(vend => console.log('vend',vend))
@@ -141,7 +144,7 @@ export class BomTable extends Component {
             return ittr;
         }, {});
         temp.push(quote);
-        this.setState({ vendorData: temp }, () => console.log(this.state.vendorData));
+        this.setState({ vendorData: temp });
     }
 
     // quotedCurrData() {
@@ -307,7 +310,6 @@ export class BomTable extends Component {
     }
 
     lowestQuoteSupplier($data, $index, thisSupplier, $i) {
-        console.log($data)
 
         return (this.supplierDataBody = [
             <td className="stock">
@@ -420,7 +422,7 @@ return (
                                 <Label>PURPOSE</Label>
                                 <div className="selectCont">
                                     <Input type="select" name="purpose">
-                                        <option>Select Purpose</option>
+                                        <option defaultValue = {this.userDetails ? this.userDetails.cf_purpose : ''}>{this.userDetails ? this.userDetails.cf_purpose : 'Select Purpose'}</option>
                                         <option value="Budgetory">Budgetory</option>
                                         <option value="To Quote Further">To Quote Further</option>
                                         <option value="To Order Immediately">To Order Immediately</option>
@@ -431,7 +433,7 @@ return (
                                 <Label>TENTATIVE ORDER DATE</Label>
                                 <div className="selectCont">
                                     <Input type="select" name="timeline">
-                                        <option>Select Timeline</option>
+                                        <option defaultValue = {this.userDetails ? this.userDetails.cf_tentative_order_date : ''}>{this.userDetails ? this.userDetails.cf_tentative_order_date : 'Select Timeline'}</option>
                                         <option value="At the Earliest">At the Earliest</option>
                                         <option value="2-3 Weeks">2-3 Weeks</option>
                                         <option value="Not sure">Not sure</option>
@@ -500,7 +502,6 @@ return (
                                                 <td><Input type="text" name={`company_sku-${$index}`} disabled={this.state.editable ? null : 'disabled'} value={$data.company_sku || $data['item_custom_fields'][1].value_formatted} onChange={this.updateBomFields.bind(this, 'company_sku', $index)}/></td>
                                                 <td><Input type="text" name={`description-${$index}`} disabled={this.state.editable ? null : 'disabled'} value={$data.description} onChange={this.updateBomFields.bind(this, 'description', $index)}/></td>
                                                 <td><Input type="number" name={`quantity-${$index}`} disabled={this.state.editable ? null : 'disabled'} value={$data.quantity} onChange={this.updateBomFields.bind(this, 'quantity', $index)}/></td>
-                                                {console.log(this.state.vendorData[0] ? this.state.vendorData[0]['759865000001242457'] : '=')}
                                                 <td>{getProp(this.state.vendorData[$data.line_item_id], 'GST') || $data.tax_percentage}</td>
                                                 <td>{getProp(this.state.vendorData[$data.line_item_id], 'HSN')}</td>
                                                 <td>{this.state.currencySymbol}{$data.msrp * this.state.currencyRate}</td>
@@ -509,7 +510,6 @@ return (
                                                     <i className="far fa-file-pdf"></i>
                                                 </td>
                                                 {this.state.vendorData.map(($vData, $i) => {
-                                                    console.log($vData)
                                                         return this.lowestQuoteSupplier($data, $index, thisSupplier, $i);
                                                     }
                                                 )}
