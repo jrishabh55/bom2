@@ -64,8 +64,6 @@ export class BomTable extends Component {
             }
     }
 
-
-
     addMultiple(e) {
         let val = e.target.value;
         this.addProduct(val);
@@ -97,9 +95,10 @@ export class BomTable extends Component {
             prefVend = prefVend.trim().split(',');
             ApiService.get(`/customer/${this.getContactId()}/bom/${this.bomId}`).then(res => {
                 this.currBomData = res.estimate.line_items;
+                console.log(this.currBomData)
                 this.setState({currData: this.currBomData}, () => {
                     let data = this.state.vendorQuotes;
-                    this.orderAmount();
+                    this.calOrderAmount();
                     ApiService.get(`/customer/${this.getContactId()}/bom/${this.bomId}/vendor/lowest_quotes`).then(lowest => {
                         if( lowest.aggregations.lowest_quotes.buckets.length > 0 ) {
                             data.push(lowest);
@@ -168,16 +167,6 @@ export class BomTable extends Component {
         }
     }
 
-    orderAmount() {
-        let amount = 0;
-        this.state.currData.map(($data, $index) => {
-            $data = $data._source || $data;
-            let field = $(`[name=quantity-${$index}]`)[0];
-            amount = amount + (field ? field.value : 0) * ($data.msrp || $data.rate);
-        })
-
-        this.setState({orderAmount: amount})
-    }
     currency(){
         let currency= $('#currency')[0].value;
         if(currency == 'INR') {
@@ -237,7 +226,6 @@ export class BomTable extends Component {
         console.log(this.state.searchProd[$index])
         currTableData.push(this.state.searchProd[$index]);
         this.setState({ currData: currTableData });
-        this.orderAmount();
     }
 
     edit() {
@@ -264,15 +252,22 @@ export class BomTable extends Component {
 
     updateBomFields($field, $index) {
         let value = $(`[name=${$field}-${$index}]`)[0].value;
-        if($field == 'quantity') {
-            this.quantity = value;
-            this.orderAmount();
-        }
         let newData = this.state.currData;
-        console.log($field)
-        console.log(newData[$index]._source[$field])
         newData[$index]._source[$field] = value;
         this.setState({currData: newData})
+    }
+
+    calOrderAmount($index = 0) {
+        console.log($index)
+        let amount = 0;
+        let value = $(`[name=quantity-${$index}]`)[0].value;
+        let newData = this.state.currData;
+        newData[$index]._source ? newData[$index]._source['quantity'] : newData[$index]['quantity'] = value;
+        this.setState({currData: newData})
+        this.state.currData.map(($data, $i) => {
+            amount = amount + ($data.quantity * $data.rate);
+            this.setState({orderAmount: amount})
+        })
     }
 
     addComment($event) {
@@ -465,13 +460,13 @@ return (
                                         <a href="javascript:void()">{ this.state.editable ? 'Save' : 'Edit' }</a>
                                     </th>
                                     <th className="sNo">S No</th>
-                                        <th className="sort" onClick={this.orderAmount.bind(this, 'manufacturer')}>Manufacturer</th>
-                                    <th className="sort" onClick={this.sorting.bind(this, 'manufctNo')}>Manufacturer Part No</th>
+                                    <th className="sort" onClick={this.sorting.bind(this, '[item_custom_fields][0].value')}>Manufacturer</th>
+                                    <th className="sort" onClick={this.sorting.bind(this, '[item_custom_fields][1].value')}>Manufacturer Part No</th>
                                     <th>Description</th>
-                                        <th className="sort" onClick={this.sorting.bind(this, 'quantity')}>Qty</th>
+                                    <th className="sort" onClick={this.sorting.bind(this, 'quantity')}>Qty</th>
                                     <th>GST %</th>
                                     <th>HSN</th>
-                                        <th className="sort" onClick={this.sorting.bind(this, 'bcy_rate')}>Price</th>
+                                    <th className="sort" onClick={this.sorting.bind(this, 'rate')}>Price</th>
                                     <th>Attachment</th>
                                     {this.state.vendorData.map(($vData, $i) => {
                                         return this.supplierDataHead;
@@ -497,10 +492,10 @@ return (
                                                 <td><Input type="text" name={`manufacturer-${$index}`} disabled={this.state.editable ? null : 'disabled'} value={$data.manufacturer || $data['item_custom_fields'][0].value_formatted} onChange={this.updateBomFields.bind(this, 'manufacturer', $index)}/></td>
                                                 <td><Input type="text" name={`company_sku-${$index}`} disabled={this.state.editable ? null : 'disabled'} value={$data.company_sku || $data['item_custom_fields'][1].value_formatted} onChange={this.updateBomFields.bind(this, 'company_sku', $index)}/></td>
                                                 <td><Input type="text" name={`description-${$index}`} disabled={this.state.editable ? null : 'disabled'} value={$data.description} onChange={this.updateBomFields.bind(this, 'description', $index)}/></td>
-                                                <td><Input type="number" name={`quantity-${$index}`} disabled={this.state.editable ? null : 'disabled'} value={$data.quantity} onChange={this.updateBomFields.bind(this, 'quantity', $index)}/></td>
+                                                <td><Input type="number" name={`quantity-${$index}`} disabled={this.state.editable ? null : 'disabled'} value={$data.quantity} onChange={this.calOrderAmount.bind(this, $index)}/></td>
                                                 <td>{getProp(this.state.vendorData[$data.line_item_id], 'GST') || $data.tax_percentage}</td>
                                                 <td>{getProp(this.state.vendorData[$data.line_item_id], 'HSN')}</td>
-                                                <td>{this.state.currencySymbol}{$data.msrp * this.state.currencyRate}</td>
+                                                <td>{this.state.currencySymbol}{$data.msrp || $data.rate * this.state.currencyRate}</td>
                                                 <td className="attachment">
                                                     <i className="fas fa-plus-circle"></i>
                                                     <i className="far fa-file-pdf"></i>
