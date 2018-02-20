@@ -49,3 +49,38 @@
 .vendorTable .tableFooter {
     text-align: left;
 }
+
+.vendorTable .custName {
+    position: relative;
+}
+
+.manuDetails {
+    border-radius: 3px;
+    background-color: #FFFFFF;
+    box-shadow: 0 2px 10px 2px rgba(0,0,0,0.24);
+    width: 350px;
+    padding: 14px 10px 29px 26px;
+    position: absolute;
+    z-index: 2;
+    left: 150px;
+    top: 0;
+}
+
+.detailBody label {
+    margin: 0 !important;
+    font-size: 10px;
+}
+.detailBody p {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    font-size: 13px;
+    color: #3C3C3C !important;
+}
+
+.detailBody hr {
+    margin: 5px 0 8px 0 !important;
+}
+
+.detailBody .detailGroup {
+    margin-top: 0;
+}

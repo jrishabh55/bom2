@@ -96,6 +96,7 @@ export class BomTable extends Component {
                 this.currBomData = res.estimate.line_items;
                 console.log(res)
                 this.setState({currData: this.currBomData}, () => {
+                    console.log(this.state.currData[0]['item_custom_fields'][0].value_formatted)
                     let data = this.state.vendorQuotes;
                     this.orderAmount();
                     // ApiService.get(`/customer/${this.getContactId()}/bom/${this.bomId}/vendor/lowest_quotes`).then(res2 => {
@@ -200,13 +201,22 @@ export class BomTable extends Component {
                 let qty = $(`[name=quantity-${$index}]`)[0].value;
                 return ({
                     "name": $data._source.name,
-                    "manufacturer": $data._source.manufacturer,
                     "description": $data._source.description,
                     "item_order": $index,
                     "bcy_rate": $data._source.msrp,
                     "rate": $data._source.msrp,
                     "quantity": $data.quantity || qty,
-                    "item_total": this.state.orderAmount
+                    "item_total": this.state.orderAmount,
+                    "item_custom_fields": [
+                        {
+                            "label": "Customer Manufacturer Part No",
+                            "value": $data._source.company_sku
+                        },
+                        {
+                            "label": "Customer Manufacturer",
+                            "value": $data._source.manufacturer
+                        }
+                    ]
                 });
             }),
             title: this.state.bom_title
@@ -297,7 +307,8 @@ export class BomTable extends Component {
     }
 
     lowestQuoteSupplier($data, $index, thisSupplier, $i) {
-        console.log(this.state.vendorData)
+        console.log($data)
+
         return (this.supplierDataBody = [
             <td className="stock">
                 <label className="checkContainer">
@@ -368,7 +379,7 @@ export class BomTable extends Component {
             </th>,
             (this.state.supp1 ? thisSupplier : null)
         ]
-        
+
 return (
         <div className="bomTable">
             <Container fluid={true}>
@@ -485,10 +496,11 @@ return (
                                                     </label>
                                                 </td>
                                                 <td>{$index + 1}</td>
-                                                <td><Input type="text" name={`manufacturer-${$index}`} disabled={this.state.editable ? null : 'disabled'} value={$data.manufacturer} onChange={this.updateBomFields.bind(this, 'manufacturer', $index)}/></td>
-                                                <td><Input type="text" name={`company_sku-${$index}`} disabled={this.state.editable ? null : 'disabled'} value={$data.company_sku} onChange={this.updateBomFields.bind(this, 'company_sku', $index)}/></td>
+                                                <td><Input type="text" name={`manufacturer-${$index}`} disabled={this.state.editable ? null : 'disabled'} value={$data.manufacturer || $data['item_custom_fields'][0].value_formatted} onChange={this.updateBomFields.bind(this, 'manufacturer', $index)}/></td>
+                                                <td><Input type="text" name={`company_sku-${$index}`} disabled={this.state.editable ? null : 'disabled'} value={$data.company_sku || $data['item_custom_fields'][1].value_formatted} onChange={this.updateBomFields.bind(this, 'company_sku', $index)}/></td>
                                                 <td><Input type="text" name={`description-${$index}`} disabled={this.state.editable ? null : 'disabled'} value={$data.description} onChange={this.updateBomFields.bind(this, 'description', $index)}/></td>
                                                 <td><Input type="number" name={`quantity-${$index}`} disabled={this.state.editable ? null : 'disabled'} value={$data.quantity} onChange={this.updateBomFields.bind(this, 'quantity', $index)}/></td>
+                                                {console.log(this.state.vendorData[0] ? this.state.vendorData[0]['759865000001242457'] : '=')}
                                                 <td>{getProp(this.state.vendorData[$data.line_item_id], 'GST') || $data.tax_percentage}</td>
                                                 <td>{getProp(this.state.vendorData[$data.line_item_id], 'HSN')}</td>
                                                 <td>{this.state.currencySymbol}{$data.msrp * this.state.currencyRate}</td>
@@ -497,6 +509,7 @@ return (
                                                     <i className="far fa-file-pdf"></i>
                                                 </td>
                                                 {this.state.vendorData.map(($vData, $i) => {
+                                                    console.log($vData)
                                                         return this.lowestQuoteSupplier($data, $index, thisSupplier, $i);
                                                     }
                                                 )}

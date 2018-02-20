@@ -6,12 +6,12 @@ import { AuthService } from '../../services/auth.service';
 import { StorageService } from '../../services/storage.service';
 import { Auth0 } from '../../services/auth0.service';
 import { env } from '../../helpers';
-
+import toastr from 'toastr';
 import './login.css';
 
 export class Login extends Component {
 
-    
+
     constructor() {
         super();
         this.phoneNumber = 0;
@@ -19,6 +19,7 @@ export class Login extends Component {
         this.email = '';
         this.state = { loginType: 'email' };
         console.log(env('AUTH0_AUDIENCE', 'not_found'), process.env);
+
     }
 
     fetchOtp() {
@@ -43,7 +44,7 @@ export class Login extends Component {
                     console.log(res)
                     this.setContactId(res.contactId);
                     Auth0.sendMail(this.email).then(res => {
-                        alert("OTP Has been sent");
+                        toastr.success('OTP has been sent')
                     });
                 }
                 else {

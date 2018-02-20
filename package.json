@@ -17,6 +17,7 @@
         "react-scripts": "1.0.17",
         "reactstrap": "^5.0.0-alpha.4",
         "redux": "^3.7.2",
+        "toastr": "^2.1.4",
         "xlsx": "^0.11.12"
     },
     "scripts": {

@@ -1,5 +1,6 @@
 import { ApiService } from './api.service';
 import { StorageService } from './storage.service';
+import { Redirect } from 'react-router';
 
 class AuthService {
 
@@ -28,6 +29,11 @@ class AuthService {
 
     isAuthenticated() {
         return StorageService.getItem('access_token') && StorageService.getItem('expires_at') > Date.now();
+    }
+
+    logout() {
+        
+        return StorageService.clear();
     }
 }
 
