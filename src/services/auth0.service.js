@@ -7,7 +7,7 @@ class Auth0 {
         this.auth0 = new auth0.WebAuth({
             domain: 'shopelect.auth0.com',
             clientID: 'Ppfj1JyyG8smHdYi2R1gPqSSCALD3F0L',
-            redirectUri: process.env.NODE_ENV === 'development' ? 'http://localhost:3000/callback' : 'https://bomui.herokuapp.com/callback',
+            redirectUri: process.env.LOCAL === 'false' ? 'https://bomui.herokuapp.com/callback' : 'http://localhost:3000/callback',
             audience: 'https://shopelect.auth0.com/api/v2/',
             responseType: 'token'
         });
