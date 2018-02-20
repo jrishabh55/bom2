@@ -22,7 +22,7 @@ export class BomTable extends Component {
         super(props);
         this.quantity = 0;
         this.bomId = 0;
-        this.appendData = null;
+        this.appendData = '';
         this.orderAsc = true;
         this.searchProdList = [];
         this.currencyRates = {
@@ -49,10 +49,7 @@ export class BomTable extends Component {
             currData: [],
             hiddenFooter: true,
             editable: false,
-            detailSupplier: false,
-            supp1: false,
-            supp2: false,
-            supp2: false,
+            supp: true,
             addProd: false,
             searchProd: this.searchProdList,
             bom_title: "Untitled",
@@ -247,8 +244,8 @@ export class BomTable extends Component {
         this.setState({ editable: !this.state.editable });
     }
 
-    toggleDetailSupplier($supp) {
-        this.setState({detailSupplier: $supp});
+    toggleDetailSupplier() {
+        this.setState({supp: !this.state.supp});
     }
 
     toggleFooter(index, expand, $id) {
@@ -318,7 +315,7 @@ export class BomTable extends Component {
                 <span className="stockLeft">{getProp(this.state.vendorData[$i][$data.line_item_id], 'current_stock') || '-'}</span>
                 <span> in stock</span>
             </td>,
-        (this.state.supp1 ? (
+        (this.state.supp ? (
             [
                 <td>{'-'}</td>,
                 <td>{getProp(this.state.vendorData[$i][$data.line_item_id], 'list_price') || '-'}</td>,
@@ -334,7 +331,7 @@ export class BomTable extends Component {
             ]
         ) : null),
 
-                (this.state.supp1
+                (this.state.supp
                     ? (<td className="attachment">
                         <i className="fas fa-plus-circle"></i>
                         <i className="far fa-file-pdf"></i>
@@ -345,12 +342,14 @@ export class BomTable extends Component {
 
     dataCaption($i) {
         return (
-            <td colSpan={this.state.supp1 ? '13' : 1} onClick={this.toggleDetailSupplier.bind(this, $i)}>
-            { !this.state.supp1 ? <span> <i className="fas fa-eye"></i> Unhide</span>
+            <td colSpan={this.state.supp ? '13' : 1} onClick={this.toggleDetailSupplier.bind(this)}>
+            { !this.state.supp ? <span> <i className="fas fa-eye"></i> Unhide</span>
             : <span> <i className="far fa-eye-slash"></i> Hide</span> }
             </td>
         )
     }
+
+
 
     render() {
         let thisSupplier = '';
@@ -376,7 +375,7 @@ export class BomTable extends Component {
             </label>
             <span className="ml-3 sort" onClick={this.sorting.bind(this, 'supplierA.price')}>Lowest Quote</span>
             </th>,
-            (this.state.supp1 ? thisSupplier : null)
+            (this.state.supp ? thisSupplier : null)
         ]
 
 return (
@@ -514,7 +513,7 @@ return (
                                                 <td>{$data.bidSts}</td>
                                             </tr>,
                                             <tr>
-                                                <td colSpan={this.state.detailSupplier ? 27 : 15} className="tableFooter">
+                                                <td colSpan={this.state.supp ? 27 : 15} className="tableFooter">
                                                     {
                                                         this.state.hiddenFooter !== $index
                                                             ? (<span>

@@ -10,64 +10,13 @@ import * as _ from 'lodash';
 
 export class VendorTable extends Component {
 
-    currTableData = [];
     orderAsc = true;
-    tableData = [
-        {
-            desc: 'Lorem Ipsum',
-            bom: {
-                no: 'Cust1010',
-                date: '20th Jan 18'
-            },
-            custName: 'ABC Corp',
-            manu: 'Schneider',
-            manuPartNo: 'INA_465P465',
-            itemGroup: 'NSX MCCB',
-            qty: '5',
-            currStock: '250',
-            gst: '18',
-            hsn: '8521485690',
-            listPrice: '1000',
-            discount: '20',
-            timeEst: '30',
-            freeDel: 'Pune',
-            quote: '800',
-            commision: '40',
-            payment: '760',
-            remarks: 'No Packing',
-            notes: 'Lorem Ipsum'
-        },
-        {
-            desc: 'Lorem Ipsum',
-            bom: {
-                no: 'Cust1020',
-                date: '20th Jan 18'
-            },
-            custName: 'VBC Corp',
-            manu: 'Zchneider',
-            manuPartNo: 'ANA_465P465',
-            itemGroup: 'MSX MCCB',
-            qty: '15',
-            currStock: '250',
-            gst: '18',
-            hsn: '8521485690',
-            listPrice: '1000',
-            discount: '20',
-            timeEst: '30',
-            freeDel: 'Pune',
-            quote: '800',
-            commision: '40',
-            payment: '760',
-            remarks: 'No Packing',
-            notes: 'Lorem Ipsum'
-        }
-    ]
 
     constructor(props) {
         super(props);
         this.vendorId = this.props.match.params.vendorId;
-        this.currTableData = this.tableData;
-        this.currTableData = _.orderBy(this.tableData, 'sNo', 'asc');
+        this.currTableData = [];
+        // this.currTableData = _.orderBy(this.tableData, 'sNo', 'asc');
         this.allBom;
         this.bomIndex = 0;
         this.bomsToFetch = 10;
@@ -92,8 +41,7 @@ export class VendorTable extends Component {
 
     componentDidMount() {
         ApiService.get(`/bom`).then(res => {
-            console.log(res.estimates[0].estimate_id)
-            this.setState({ bomList: res.estimates },()=>console.log(this.state.bomList));
+            this.setState({ bomList: res.estimates });
             this.fetchBom();
         })
     };
@@ -122,7 +70,7 @@ export class VendorTable extends Component {
             ApiService.get(url).then(res => {
                 data.push(res.estimate.line_items)
                 dataDetails.push(res.estimate)
-                this.setState({currData: data, currDataDetails: dataDetails},()=>{console.log(this.state.currData)})
+                this.setState({currData: data, currDataDetails: dataDetails})
             })
         }
         this.bomIndex += this.bomsToFetch;
