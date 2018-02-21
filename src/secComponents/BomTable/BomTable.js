@@ -87,6 +87,7 @@ export class BomTable extends Component {
         if (!this.isNew) {
             ApiService.get(`/contacts/${this.getContactId()}`).then(res => {
                 this.userDetails = res.contact;
+                console.log(this.userDetails)
             });
             let prefVend = StorageService.getItem('prefVendors');
             prefVend = prefVend.trim().split(',').map(vendor => vendor.trim());

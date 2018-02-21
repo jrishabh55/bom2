@@ -3,75 +3,59 @@ import FontAwesome from 'react-fontawesome';
 import Dropzone from 'react-dropzone';
 import * as XLSX from 'xlsx';
 import * as $ from 'jquery';
+import { Button } from 'reactstrap';
+import {Link} from 'react-router-dom';
+import {ApiService} from './services/api.service';
+import {StorageService} from './services/storage.service';
 
 class App extends Component {
 	constructor(props) {
 		super(props);
 		this.dropZone = null;
-		this.state = { boms: [] };
+		this.state = {
+            bomList: []
+        };
+
+		this.boms = [];
 	}
 	componentDidMount() {
-		var bomData = localStorage.getItem('boms');
-		console.log('BomDATA=', bomData);
-		var boms = [];
-		if (bomData == null || bomData == 'null' || bomData == undefined) boms = [];
-		else boms = JSON.parse(bomData);
+		console.log(this.getContactId())
+		ApiService.get(`/customer/${this.getContactId()}/bom`).then(res => {
+            console.log(res)
+            this.setState({ bomList: res.estimates });
+			console.log(this.state.bomList)
+			// this.test();
+        })
 
-		this.setState({ boms: boms });
+		ApiService.get(`/contacts/${this.getContactId()}`).then(res1 => {
+            const prefVendors = res1.contact.cf_preferred_vendors;
+            prefVendors ? StorageService.setItem('prefVendors', prefVendors) : ''
+        })
+
+
 	}
-	loadFile(files) {
-		const f = files[0];
-		var name = f.name;
-		const reader = new FileReader();
-		reader.onload = (evt) => {
-			/* Parse data */
-			const bstr = evt.target.result;
-			const wb = XLSX.read(bstr, { type: 'binary' });
-			/* Get first worksheet */
-			const wsname = wb.SheetNames[0];
-			const ws = wb.Sheets[wsname];
-			/* Convert array of arrays */
-			const data = XLSX.utils.sheet_to_json(ws, { header: 1 });
-			/* Update state */
-			console.log(data);
-			this.props.history.push({
-				pathname: '/main',
-				state: {
-					data: data
-				}
-			});
-		};
-		reader.readAsBinaryString(f);
-	}
+
+	getContactId() {
+        return localStorage.getItem('contactId');
+    }
 
 	render() {
-		var boms = [];
-		console.log('BOMARRAY=', this.state.boms);
-		for (var i = 0; i < this.state.boms.length; i++) {
+		for (var i = 0; i < this.state.bomList.length; i++) {
 			let j = i;
 			let _href = '/main/' + j.toString();
-			boms.push(
+			this.boms.push(
 				<ul>
 					<li class="first-in-row">
-						<a
-							class="saved-bom"
-							onClick={() => {
-								this.props.history.push({
-									pathname: '/main',
-									state: {
-										bomID: j
-									}
-								});
-							}}
-							target="_blank"
-						>
-							<h3>{this.state.boms[i].title}</h3>
-							<div class="last-updated">Last updated: {this.state.boms[i].date}</div>
-						</a>
+						<Link to = {`/bom/${this.state.bomList[i].estimate_id}`}>
+							<h3>{this.state.bomList[i].cf_title}</h3>
+
+							<div class="last-updated">Last updated: {this.state.bomList[i].last_modified_time}</div>
+						</Link>
 					</li>
 				</ul>
 			);
 		}
+
 		return (
 			<section className="content bom-tool manage" style={{ marginTop: '-60px' }}>
 				<div className="inner">
@@ -83,14 +67,7 @@ class App extends Component {
 					<div className="create-or-upload container-fluid">
 						<div className="row">
 							<div className="col-sm-4">
-								<form className="create" method="post" action="/bom-tool/api/new">
-									<input type="submit" value="Create a New BOM" className="create-button" />
-									<input
-										name="_authentication_token"
-										type="hidden"
-										value="211321901470595359153915695414268937302"
-									/>
-								</form>
+								<Button className="create-button"><Link to="/bom/new">Create a New BOM</Link></Button>
 							</div>
 							<div className="col-sm-1">
 								<div className="vertical-separator">
@@ -177,7 +154,7 @@ class App extends Component {
 					<h2>Saved BOMs</h2>
 					<div class="saved-boms">
 						<div>
-							<div class="saved-boms-list">{boms}</div>
+							<div class="saved-boms-list">{this.boms}</div>
 						</div>
 					</div>
 					<div className="sign-in">
