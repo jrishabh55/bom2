@@ -2,7 +2,7 @@
     "name": "shoplect",
     "version": "0.1.0",
     "private": true,
-    "homepage": "http://jrishabh55.github.io/BOM-UI",
+    "homepage": "http://jrishabh55.github.io/bom2",
     "dependencies": {
         "auth0-js": "^9.2.2",
         "bootstrap": "^4.0.0",
