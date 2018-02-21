@@ -34,6 +34,7 @@ export class BomTable extends Component {
         this.supplierDataCaption = '';
         this.supplierDataBody = '';
         this.bomId = this.props.match.params.bomId;
+        this.isNew = this.bomId === 'new';
         let comment = [];
         let history = [];
 
@@ -46,7 +47,7 @@ export class BomTable extends Component {
             currData: [],
             hiddenFooter: true,
             editable: false,
-            supp: true,
+            supp: false,
             addProd: false,
             searchProd: this.searchProdList,
             bom_title: "Untitled",
@@ -83,12 +84,12 @@ export class BomTable extends Component {
     }
 
     componentDidMount() {
-        if (this.bomId !== 'new') {
+        if (!this.isNew) {
             ApiService.get(`/contacts/${this.getContactId()}`).then(res => {
                 this.userDetails = res.contact;
-            })
+            });
             let prefVend = StorageService.getItem('prefVendors');
-            prefVend = prefVend.trim().split(',');
+            prefVend = prefVend.trim().split(',').map(vendor => vendor.trim());
             ApiService.get(`/customer/${this.getContactId()}/bom/${this.bomId}`).then(res => {
                 this.setState({bom_title: res.estimate.custom_field_hash.cf_title});
                 this.currBomData = res.estimate.line_items;
@@ -237,7 +238,6 @@ export class BomTable extends Component {
             title: this.state.bom_title
         }
         ApiService.post(`/customer/${StorageService.getItem('contactId')}/bom/${this.bomId}`, data).then(res => {
-            console.log(res)
             toastr.success(res.message);
             this.props.history.push('/bom');
         });
@@ -274,6 +274,7 @@ export class BomTable extends Component {
     updateBomFields($field, $index) {
         let value = $(`[name=${$field}-${$index}]`)[0].value;
         let newData = this.state.currData;
+        console.log(newData);
         newData[$index]._source[$field] = value;
         this.setState({currData: newData})
     }
@@ -512,8 +513,8 @@ return (
                                                     </label>
                                                 </td>
                                                 <td>{$index + 1}</td>
-                                                <td><Input type="text" name={`manufacturer-${$index}`} disabled={this.state.editable ? null : 'disabled'} value={$data.manufacturer || $data['item_custom_fields'][0].value_formatted} onChange={this.updateBomFields.bind(this, 'manufacturer', $index)}/></td>
-                                                <td><Input type="text" name={`company_sku-${$index}`} disabled={this.state.editable ? null : 'disabled'} value={$data.company_sku || $data['item_custom_fields'][1].value_formatted} onChange={this.updateBomFields.bind(this, 'company_sku', $index)}/></td>
+                                                <td><Input type="text" name={`manufacturer-${$index}`} disabled={this.state.editable && this.isNew ? null : 'disabled'} value={$data.manufacturer || getProp($data['item_custom_fields'][0], 'value_formatted')} onChange={this.updateBomFields.bind(this, 'manufacturer', $index)}/></td>
+                                                <td><Input type="text" name={`company_sku-${$index}`} disabled={this.state.editable && this.isNew ? null : 'disabled'} value={$data.company_sku || getProp($data['item_custom_fields'][1], 'value_formatted')} onChange={this.updateBomFields.bind(this, 'company_sku', $index)}/></td>
                                                 <td><Input type="text" name={`description-${$index}`} disabled={this.state.editable ? null : 'disabled'} value={$data.description} onChange={this.updateBomFields.bind(this, 'description', $index)}/></td>
                                                 <td><Input type="number" name={`quantity-${$index}`} disabled={this.state.editable ? null : 'disabled'} value={$data.quantity} onChange={this.calOrderAmount.bind(this, $index)}/></td>
                                                 <td>{getProp(this.state.vendorData[$data.line_item_id], 'GST') || $data.tax_percentage}</td>
@@ -535,7 +536,7 @@ return (
                                                     {
                                                         this.state.hiddenFooter !== $index
                                                             ? (<span>
-                                                                <span className="lastAct">Quantity changes dony by Customer 18th Jan 2018, 12.30pm</span>
+                                                                <span className="lastAct">{/* Quantity changes dony by Customer 18th Jan 2018, 12.30pm */}</span>
                                                                 <a onClick={this.toggleFooter.bind(this, $index, true, $data.line_item_id)} className="viewActivityLog text-right" href=";" role="button" data-toggle="collapse" data-target={`#collapse${$index}`} aria-expanded="true" aria-controls={`collapse${$index}`}>
                                                                     View Full activity log
                                                                     <i className="ml-1 far fa-plus-square"></i>
@@ -565,11 +566,12 @@ return (
                                                                     <div className="float-right">
                                                                         <span>
                                                                             <ul className="commentLog lg-space">
+                                                                            {/*
                                                                                 <li>Quantity changes to 10 done by Customer - 18th Jan 2018 , 12.30pm</li>
                                                                                 <li>Quantity changes to 10 done by Customer - 18th Jan 2018 , 12.30pm</li>
                                                                                 <li>Quantity changes to 10 done by Customer - 18th Jan 2018 , 12.30pm</li>
                                                                                 <li>Quantity changes to 10 done by Customer - 18th Jan 2018 , 12.30pm</li>
-                                                                            </ul>
+                                                                            */}</ul>
                                                                         </span>
                                                                         <span>
                                                                             <a onClick={this.toggleFooter.bind(this, $index)} className="viewActivityLog" href=";" role="button" data-toggle="collapse" data-target={`#collapse${$index}`} aria-expanded="true" aria-controls={`collapse${$index}`}>

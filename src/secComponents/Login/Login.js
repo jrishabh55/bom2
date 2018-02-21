@@ -18,13 +18,10 @@ export class Login extends Component {
         this.otp = 0;
         this.email = '';
         this.state = { loginType: '' };
-        console.log(env('AUTH0_AUDIENCE', 'not_found'), process.env);
-
     }
 
     fetchOtp() {
         this.otp = $('input[name=otp]').val();
-        console.log(this.otp)
     }
 
     doLogin() {

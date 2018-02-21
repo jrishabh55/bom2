@@ -62,7 +62,6 @@ class ApiService {
   }
 
   parse(res) {
-      console.log(res)
     if (res.status >= 400) {
       throw new Error("Invalid authentication");
     } else {
