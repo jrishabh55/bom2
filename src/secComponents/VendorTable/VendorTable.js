@@ -3,10 +3,12 @@ import { Container, Row, Col, Button, Form, FormGroup, Label, Input, Table } fro
 import { ApiService } from '../../services/api.service';
 import { StorageService } from '../../services/storage.service';
 import { VendorContract } from '../../services/vendor.contract';
-import '../main.css';
-import './vendorTable.css';
 import * as $ from 'jquery';
 import * as _ from 'lodash';
+import toastr from 'toastr';
+
+import '../main.css';
+import './vendorTable.css';
 
 export class VendorTable extends Component {
 
@@ -30,19 +32,20 @@ export class VendorTable extends Component {
             bomList: [],
             manuDetails: []
             };
-            $(window).on('scroll', () => {
-                var scrollHeight = $(document).height();
-            	var scrollPosition = $(window).height() + $(window).scrollTop();
-            	if ((scrollHeight - scrollPosition) / scrollHeight === 0) {
-            	    this.fetchBom();
-            	}
-            })
     }
 
     componentDidMount() {
         ApiService.get(`/bom`).then(res => {
-            this.setState({ bomList: res.estimates });
-            this.fetchBom();
+            this.setState({ bomList: res.estimates }, this.fetchBom.bind(this));
+        });
+        $(window).on('scroll', () => {
+            var scrollHeight = $(document).height();
+            var scrollPosition = $(window).height() + $(window).scrollTop();
+            if ((scrollHeight - scrollPosition) / scrollHeight === 0) {
+                if (this.state.bomList > 0 && this.state.bomList.length <= this.bomIndex) {
+                    this.fetchBom();
+                }
+            }
         })
     };
 
@@ -56,10 +59,8 @@ export class VendorTable extends Component {
             newData[$i][$index]['item_custom_fields'][1] ? newData[$i][$index]['item_custom_fields'][1].value_formatted = value : '';
         }
         else {
-            console.log(newData[$i][$index])
             newData[$i][$index][$field] = value;
         }
-        console.log(newData)
         this.setState({currData: newData})
     }
 
@@ -69,10 +70,10 @@ export class VendorTable extends Component {
             let data = this.state.currData;
             let dataDetails = this.state.currDataDetails;
             ApiService.get(url).then(res => {
-                data.push(res.estimate.line_items)
-                dataDetails.push(res.estimate)
-                this.setState({currData: data, currDataDetails: dataDetails})
-            })
+                data.push(res.estimate.line_items);
+                dataDetails.push(res.estimate);
+                this.setState({currData: data, currDataDetails: dataDetails});
+            });
         }
         this.bomIndex += this.bomsToFetch;
     }
@@ -120,7 +121,6 @@ export class VendorTable extends Component {
     }
 
     saveOrder($data, $data2, $index, $i) {
-        console.log($data, $data2, $index, $i)
         let url = `/vendor/${StorageService.getItem('contactId')}/bom/${this.state.currDataDetails[$i].estimate_id}/quote/${$data.line_item_id}`;
         let data = {
                     	list_price: $data.item_total || '',
@@ -131,10 +131,8 @@ export class VendorTable extends Component {
                         GST: $data.tax_percentage || '',
                         delivery_city: $data.delivery_city || '',
                         remarks: $data.remarks || ''
-                    }
-        console.log(data)
-        console.log(url)
-        ApiService.post(url, data).then(res => console.log(res))
+                    };
+        ApiService.post(url, data).then(res => toastr.success(`Your bid has been placed for ${$data.line_item_id}`))
     }
 
     descModal($data) {
@@ -223,10 +221,10 @@ export class VendorTable extends Component {
                     <Table bordered>
                             <thead>
                                 <tr className="tableCaption">
-                                <td colspan="9">Customer details</td>
-                                <td colspan="8">Quotation details</td>
-                                <td colspan="2">Shopelect Commission</td>
-                                <td colspan="4">Customer Custom Columns</td>
+                                <td colSpan="9">Customer details</td>
+                                <td colSpan="8">Quotation details</td>
+                                <td colSpan="2">Shopelect Commission</td>
+                                <td colSpan="4">Customer Custom Columns</td>
                                 </tr>
                                 <tr>
                                 <th className="clr-primary" onClick={this.edit.bind(this)}><a href="javascript:void()">{this.state.editable ? 'Save' : 'Edit'}</a></th>
@@ -259,14 +257,14 @@ export class VendorTable extends Component {
                                 this.state.currData.map(($data2, $i) => {
                                     return $data2.map(($data, $index) => {
                                         return ([<tr className="tableRow">
-                                        <td><i className="fas fa-times cancel"></i></td>
-                                        <td><i className="fas fa-phone"></i></td>
+                                        <td onClick={() => toastr.info("The following operation is not available as of now.")}><i className="fas fa-times cancel"></i></td>
+                                        <td onClick={() => toastr.info("The following operation is not available as of now.")}><i className="fas fa-phone"></i></td>
                                         <td><span onClick={this.descModal.bind(this,$data.description)} data-toggle="modal" data-target="#descModal">{$data.description.substr(0,50) + '...' || '-'}</span></td>
                                         <td>
                                             {this.state.currDataDetails[$i].estimate_id || '-'}<br />
                                             <span className="clr-form-2 font-xs">{this.state.currDataDetails[$i].date || '-'}</span>
                                         </td>
-                                        <td className="custName" onClick={this.manuDetails.bind(this, this.state.currDataDetails[$i], $i)}><span className="clr-primary">{this.state.currDataDetails[$i].customer_name || '-'} <i class="float-right fas fa-info-circle"></i></span>{this.showManuDetails ? manuDetails : ''}</td>
+                                        <td className="custName" onClick={this.manuDetails.bind(this, this.state.currDataDetails[$i], $i)}><span className="clr-primary">{this.state.currDataDetails[$i].customer_name || '-'} <i className="float-right fas fa-info-circle"></i></span>{this.showManuDetails ? manuDetails : ''}</td>
                                         <td><Input name={`manuName-${$i}-${$index}`} type="text" disabled={this.state.editable ? null : 'disabled'} value={$data['item_custom_fields'][0] ? $data['item_custom_fields'][0].value : ''} onChange={this.updateBomFields.bind(this, 'manuName', $i, $index)} /></td>
                                         <td><Input name={`manuPart-${$i}-${$index}`} type="text" disabled={this.state.editable ? null : 'disabled'} value={$data['item_custom_fields'][1] ? $data['item_custom_fields'][1].value : ''} onChange={this.updateBomFields.bind(this, 'manuPart', $i, $index)} /></td>
                                         <td><Input name={`product_type-${$i}-${$index}`} type="text" disabled={this.state.editable ? null : 'disabled'} value={$data.product_type || ''} onChange={this.updateBomFields.bind(this, 'product_type', $i, $index)} /></td>
@@ -287,10 +285,10 @@ export class VendorTable extends Component {
                                         <i className="far fa-file-pdf"></i>
                                         </td>
                                         <td>{'-'}</td>
-                                        <td><span onClick={this.saveOrder.bind(this,$data,$data2,$index,$i)}><i class="fas fa-check"></i></span></td>
+                                        <td><span onClick={this.saveOrder.bind(this,$data,$data2,$index,$i)}><i className="fas fa-check"></i></span></td>
                                             </tr>,
                                                 <tr>
-                                                <td colspan="23" className="tableFooter">
+                                                <td colSpan="23" className="tableFooter">
                                                 {
                                                     this.state.showFooter ? (
                                                         <div>
@@ -300,7 +298,7 @@ export class VendorTable extends Component {
                                                                 </a>
                                                                 <span className="lastAct ml-3">Comment from Customer</span>
                                                             </Col>
-                                                            <Col className>
+                                                            <Col>
                                                                 <div className="float-right">
                                                                     <span className="lastAct">Quantity changes dony by Customer 18th Jan 2018, 12.30pm</span>
                                                                     <a onClick={this.toggleFooter.bind(this)} className="ml-3 viewActivityLog text-right" href=";" role="button" data-toggle="collapse" data-target={`#collapse${$index}`} aria-expanded="true" aria-controls={`collapse${$index}`}>
@@ -333,10 +331,10 @@ export class VendorTable extends Component {
                                                                 </Col>
                                                                 <Col md="6" className="text-right">
                                                                     <ul className="commentLog lg-space">
+                                                                        { /*<li>Quantity changes to 10 done by Customer - 18th Jan 2018 , 12.30pm</li>
                                                                         <li>Quantity changes to 10 done by Customer - 18th Jan 2018 , 12.30pm</li>
                                                                         <li>Quantity changes to 10 done by Customer - 18th Jan 2018 , 12.30pm</li>
-                                                                        <li>Quantity changes to 10 done by Customer - 18th Jan 2018 , 12.30pm</li>
-                                                                        <li>Quantity changes to 10 done by Customer - 18th Jan 2018 , 12.30pm</li>
+                                                                        <li>Quantity changes to 10 done by Customer - 18th Jan 2018 , 12.30pm</li> */}
                                                                     </ul>
                                                                 </Col>
                                                                 <Col md="2" className="text-right" style={{
@@ -357,16 +355,16 @@ export class VendorTable extends Component {
                                 }
                             </tbody>
                         </Table>
-                        <div class="modal fade" id="descModal">
-                          <div class="modal-dialog" role="document">
-                            <div class="modal-content">
-                              <div class="modal-header">
-                                <h5 class="modal-title">Description</h5>
-                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <div className="modal fade" id="descModal">
+                          <div className="modal-dialog" role="document">
+                            <div className="modal-content">
+                              <div className="modal-header">
+                                <h5 className="modal-title">Description</h5>
+                                <button type="button" className="close" data-dismiss="modal" aria-label="Close">
                                   <span aria-hidden="true">&times;</span>
                                 </button>
                               </div>
-                              <div class="modal-body">
+                              <div className="modal-body">
                                 <p>{this.state.modalDescData}</p>
                               </div>
                              </div>
