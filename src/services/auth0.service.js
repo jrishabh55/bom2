@@ -15,7 +15,6 @@ class Auth0 {
     }
 
     login(email, code) {
-        console.log(email, code)
         StorageService.setItem('email', email);
         this.auth0.passwordlessVerify({
             connection: 'email',
@@ -25,13 +24,11 @@ class Auth0 {
             if (err.statusCode === 400) {
                 toastr.error('Invalid code entered');
             }
-            console.log(res);
         });
     }
 
 
     loginWithSms(phoneNumber, code) {
-        console.log(phoneNumber, code)
         StorageService.setItem('phoneNumber', phoneNumber);
         this.auth0.passwordlessVerify({
             connection: 'sms',
@@ -41,12 +38,10 @@ class Auth0 {
             if (err.statusCode === 400) {
                 toastr.error('Invalid code entered');
             }
-            console.log(res);
         });
     }
 
     sendMail(email) {
-        console.log(email)
         return new Promise((resolve, reject) => {
             this.auth0.passwordlessStart({
                 connection: 'email',
