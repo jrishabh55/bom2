@@ -217,27 +217,30 @@ export class BomTable extends Component {
             items: this.state.currData.map(($data, $index) => {
                 let qty = $(`[name=quantity-${$index}]`)[0].value;
                 return ({
-                    "description": $data.description,
+                    "description": $data.description || $data._source.description,
                     "item_order": $index,
-                    "bcy_rate": $data.bcy_rate,
-                    "rate": $data.msrp || $data.rate,
+                    "bcy_rate": $data.bcy_rate || $data._source.msrp,
+                    "rate": $data.msrp || $data.rate || $data._source.msrp,
                     "quantity": $data.quantity,
-                    "item_total": $data.item_total,
+                    "item_total": $data.item_total || (($data.quantity || 0) * ($data.rate || $data._source.msrp)),
                     "item_custom_fields": [
                         {
                             "label": "Customer Manufacturer Part No",
-                            "value": $data.item_custom_fields[0].value
+                            "value": $data.item_custom_fields ? $data.item_custom_fields[0].value :  $data._source.company_sku
                         },
                         {
                             "label": "Customer Manufacturer",
-                            "value": $data.item_custom_fields[1].value
+                            "value": $data.item_custom_fields ? $data.item_custom_fields[1].value : $data._source.manufacturer
                         }
                     ]
+
                 });
             }),
             title: this.state.bom_title
         }
+        console.log(data)
         ApiService.post(`/customer/${StorageService.getItem('contactId')}/bom/${this.bomId}`, data).then(res => {
+            console.log(res)
             toastr.success(res.message);
             this.props.history.push('/bom');
         });
