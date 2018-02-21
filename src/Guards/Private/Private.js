@@ -5,12 +5,12 @@ import { AuthService } from '../../services/auth.service';
 import { StorageService } from '../../services/storage.service';
 
 export class Private extends Guard {
-    
-    canActive() {
-        if (AuthService.isAuthenticated()) {
-            return this.props.children;
-        }
-        StorageService.clear();
-        return <Redirect to='/login' />;
+
+  canActive() {
+    if ( AuthService.isAuthenticated() ) {
+      return this.props.children;
     }
+    StorageService.clear();
+    return <Redirect to='/login'/>;
+  }
 }
