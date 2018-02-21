@@ -47,7 +47,6 @@ export class Login extends Component {
             this.email = $val;
             AuthService.checkUser(this.email, 'email').then(res => {
                 if( res.success ) {
-                    console.log(res)
                     this.setContactId(res.contactId);
                     Auth0.sendMail(this.email).then(res => {
                         $('input[name=otp], #signinBtn').removeAttr('disabled').removeClass('disabled');
