@@ -5,7 +5,6 @@ import { Container, Row, Col, Button, Form, FormGroup, Label, Input } from 'reac
 import { AuthService } from '../../services/auth.service';
 import { StorageService } from '../../services/storage.service';
 import { Auth0 } from '../../services/auth0.service';
-import { env } from '../../helpers';
 import toastr from 'toastr';
 import './login.css';
 

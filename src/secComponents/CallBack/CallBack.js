@@ -2,7 +2,6 @@ import React, {Component} from 'react';
 import {Auth0} from '../../services/auth0.service';
 import history from '../../helpers/history';
 import { StorageService } from '../../services/storage.service';
-import { BrowserRouter as Router, Route, Switch, Redirect } from 'react-router-dom';
 import { AuthService } from '../../services/auth.service';
 
 export class CallBack extends Component {
