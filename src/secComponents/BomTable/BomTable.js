@@ -592,15 +592,12 @@ return (
                                                 <td>{$index + 1}</td>
                                                 <td>{$data.manufacturer || getProp($data['item_custom_fields'][0], 'value')}</td>
                                                 <td>{$data.company_sku || getProp($data['item_custom_fields'][1], 'value')}</td>
-                                                <td><span onClick={this.descModal.bind(this,$data.description, $index)} data-toggle="modal" data-target="#bomDescModal">{$data.description.substr(0,50) + '...' || '-'}</span></td>
-                                                <td>{this.state.editable ? (
-                                                    <Input type="number" name={`quantity-${$index}`} value={$data.quantity} onChange={() => {
+                                                <td><span onClick={this.descModal.bind(this,$data.description || '-', $index)} data-toggle="modal" data-target="#bomDescModal">{$data.description ? ($data.description.length>50 ? $data.description.substr(0,50) + '...' : $data.description) : '-'}</span></td>
+                                                <td><Input type="number" name={`quantity-${$index}`} value={$data.quantity} onChange={() => {
                                                             this.updateBomFields.call(this, 'quantity', $index);
                                                             this.calOrderAmount.call(this, $index);
                                                     }}/>
-                                                ) : (
-                                                    $data.quantity
-                                                )}</td>
+                                                </td>
                                                 <td>{getProp(this.state.vendorData[$data.line_item_id], 'GST') || $data.tax_percentage}</td>
                                                 <td>{getProp(this.state.vendorData[$data.line_item_id], 'HSN')}</td>
                                                 <td>{this.state.currencySymbol}{$data.msrp || $data.rate || 0 * this.state.currencyRate}</td>

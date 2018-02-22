@@ -1,3 +1,9 @@
+#header-fixed {
+    position: fixed;
+    top: 0px; display:none;
+    background-color:white;
+}
+
 .vendorTable thead th.sort::before, thead th.supplier .sort::before {
     top: inherit !important;
     bottom: 17px !important;
@@ -10,6 +16,11 @@
 .vendorTable table thead tr.tableCaption > td {
     padding: 8px 0 9px 12px;
     color: #9B9B9B !important;
+}
+
+.vendorTable thead {
+    position:static;
+    top: 0;
 }
 
 .vendorTable .nav-tabs li{
