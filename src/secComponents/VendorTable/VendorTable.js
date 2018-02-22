@@ -27,7 +27,7 @@ export class VendorTable extends Component {
             currData: [],
             currDataDetails: [],
             showFooter: true,
-            editable: false,
+            editable: true,
             modalDescData: '',
             bomList: [],
             manuDetails: []
