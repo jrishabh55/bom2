@@ -59,12 +59,14 @@ export class BomTable extends Component {
             orderAmount: 0,
             vendorData: [],
             vendorQuotes: [],
-            modalDescData: {}
+            modalDescData: {},
+            searchItemValue: ''
             }
     }
 
     addMultiple(e) {
         let val = e.target.value;
+        this.setState({searchItemValue: val})
         this.addProduct(val);
         this.fetchPartDetails(val);
     }
@@ -252,11 +254,13 @@ export class BomTable extends Component {
     }
 
     appendInput($index) {
+        this.state.searchItemValue = '';
         let currTableData = this.state.currData;
         const data = this.state.searchProd[$index];
         data._source.quantity = 1;
         currTableData.push(data);
         this.setState({ currData: currTableData });
+        this.fetchPartDetails('');
     }
 
     edit() {
@@ -662,7 +666,7 @@ return (
                         </Table>
                         <Col md="4">
                             <div id="copyMPN">
-                                <Input onChange={this.addMultiple.bind(this)} type="text" placeholder="Add MPN or SKU"/>
+                                <Input value = {this.state.searchItemValue} onChange={this.addMultiple.bind(this)} type="text" placeholder="Add MPN or SKU"/>
                                 <span id="btnMPN">Paste</span>
                             </div>
                             <table className="table table-sm">
