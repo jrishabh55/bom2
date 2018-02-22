@@ -97,6 +97,7 @@ export class BomTable extends Component {
             let prefVend = StorageService.getItem('prefVendors');
             prefVend = prefVend.trim().split(',').map(vendor => vendor.trim());
             ApiService.get(`/customer/${this.getContactId()}/bom/${this.bomId}`).then(res => {
+                console.log(res)
                 this.setState({bom_title: res.estimate.custom_field_hash.cf_title, temp_bom_title: res.estimate.custom_field_hash.cf_title});
                 this.currBomData = res.estimate.line_items;
                 this.setState({currData: this.currBomData}, () => {
@@ -238,12 +239,12 @@ export class BomTable extends Component {
                     "line_item_id": $data.line_item_id,
                     "item_custom_fields": [
                         {
-                            "label": "Customer Manufacturer Part No",
-                            "value": $data.company_sku || getProp($data.item_custom_fields[0], 'value')
+                            "label": "Customer Manufacturer",
+                            "value": $data.manufacturer || getProp($data.item_custom_fields[0], 'value')
                         },
                         {
-                            "label": "Customer Manufacturer",
-                            "value": $data.manufacturer || getProp($data.item_custom_fields[1], 'value')
+                            "label": "Customer Manufacturer Part No",
+                            "value": $data.company_sku || getProp($data.item_custom_fields[1], 'value')
                         }
                     ]
 
@@ -319,7 +320,8 @@ export class BomTable extends Component {
         newData[$index]['quantity'] = value;
         this.setState({currData: newData})
         this.state.currData.map(($data, $i) => {
-            amount = amount + (($data.quantity || 0) * ($data.rate || $data._source.msrp));
+            console.log($data)
+            amount = amount + (($data.quantity || 0) * ($data.rate || ($data._source ? $data._source.msrp : 0) || 0));
             this.setState({orderAmount: amount})
         })
     }
@@ -375,8 +377,6 @@ export class BomTable extends Component {
                 <td>{getProp(this.state.vendorData[$i][$data.line_item_id], 'list_price') || '-'}</td>,
                 <td>{'-'}</td>,
                 <td>{'-'}</td>,
-                <td>{'-'}</td>,
-                <td>{getProp(this.state.vendorData[$i][$data.line_item_id], 'list_price') - getProp(this.state.vendorData[$i][$data.line_item_id], 'bid_price') || '-'}</td>,
                 <td>{getProp(this.state.vendorData[$i][$data.line_item_id], 'discount') || '-'}</td>,
                 <td>{getProp(this.state.vendorData[$i][$data.line_item_id], 'current_stock') || '-'}</td>,
                 <td>{getProp(this.state.vendorData[$i][$data.line_item_id], '-') || '-'}</td>,
@@ -396,7 +396,7 @@ export class BomTable extends Component {
 
     dataCaption($i) {
         return (
-            <td colSpan={this.state.supp ? '13' : 1} onClick={this.toggleDetailSupplier.bind(this)}>
+            <td colSpan={this.state.supp ? '11' : 1} onClick={this.toggleDetailSupplier.bind(this)}>
             { !this.state.supp ? <span> <i className="fas fa-eye"></i> Unhide</span>
             : <span> <i className="far fa-eye-slash"></i> Hide</span> }
             </td>
@@ -450,8 +450,6 @@ export class BomTable extends Component {
             <th className="lg-width">Supplier (total Amount)</th>,
             <th>Offered Manufacturer</th>,
             <th className="lg-width">Offered Manufacturer Part No</th>,
-            <th>Payment Terms</th>,
-            <th>Cash Discount</th>,
             <th>Discount %</th>,
             <th>Current Stock</th>,
             <th className="lg-width">Time in days to arrange all Qty</th>,
@@ -592,8 +590,8 @@ return (
                                                     </label> */}
                                                 </td>
                                                 <td>{$index + 1}</td>
-                                                <td>{$data.manufacturer || getProp($data['item_custom_fields'][1], 'value')}</td>
-                                                <td>{$data.company_sku || getProp($data['item_custom_fields'][0], 'value')}</td>
+                                                <td>{$data.manufacturer || getProp($data['item_custom_fields'][0], 'value')}</td>
+                                                <td>{$data.company_sku || getProp($data['item_custom_fields'][1], 'value')}</td>
                                                 <td><span onClick={this.descModal.bind(this,$data.description, $index)} data-toggle="modal" data-target="#bomDescModal">{$data.description.substr(0,50) + '...' || '-'}</span></td>
                                                 <td>{this.state.editable ? (
                                                     <Input type="number" name={`quantity-${$index}`} value={$data.quantity} onChange={() => {
@@ -605,7 +603,7 @@ return (
                                                 )}</td>
                                                 <td>{getProp(this.state.vendorData[$data.line_item_id], 'GST') || $data.tax_percentage}</td>
                                                 <td>{getProp(this.state.vendorData[$data.line_item_id], 'HSN')}</td>
-                                                <td>{this.state.currencySymbol}{$data.msrp || $data.rate * this.state.currencyRate}</td>
+                                                <td>{this.state.currencySymbol}{$data.msrp || $data.rate || 0 * this.state.currencyRate}</td>
                                                 <td className="attachment">
                                                     <i className="fas fa-plus-circle"></i>
                                                     <i className="far fa-file-pdf"></i>
@@ -717,7 +715,7 @@ return (
                                         </p>
                                       </div>
                                       <div className="modal-footer">
-                                        <button type="button" className="btn btn-secondary" data-dismiss="modal">Save changes</button>
+                                        <button type="button" className="btn fill-btn" data-dismiss="modal">Save changes</button>
                                       </div>
                                      </div>
                                   </div>
