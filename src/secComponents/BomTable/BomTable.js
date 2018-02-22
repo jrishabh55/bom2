@@ -284,7 +284,7 @@ export class BomTable extends Component {
             this.getComments($id, index);
         }
     }
-    
+
     sorting($colIndex) {
         const $orderPar = this.orderAsc ? 'asc' : 'desc';
         const currTableData = _.orderBy(this.state.currData, $colIndex, $orderPar);
@@ -439,7 +439,7 @@ export class BomTable extends Component {
                 });
             });
         const csv = (toCSV(data, title));
-        download(`${title}.csv`, csv);        
+        download(`${title}.csv`, csv);
     }
 
     descModal($data, $index) {
@@ -538,7 +538,11 @@ return (
                                 </div>
                             </FormGroup>
                             <span className="font-xs clr-secondary ml-3">Order Amount</span>
-                            <span className="font-l clr-grey ml-2">{this.state.currencySymbol}{this.state.orderAmount * this.state.currencyRate}</span>
+                            <span className="font-l clr-grey ml-2">
+                                {
+                                    this.state.currencySymbol + (this.state.orderAmount * this.state.currencyRate).toFixed(2)
+                                }
+                            </span>
                             {this.saveBtn}
                             <span className="clr-secondary font-xs ml-3">Auto fill</span>
                             <FormGroup className="ml-2">
@@ -607,7 +611,9 @@ return (
                                                 </td>
                                                 <td>{getProp(this.state.vendorData[$data.line_item_id], 'GST') || $data.tax_percentage}</td>
                                                 <td>{getProp(this.state.vendorData[$data.line_item_id], 'HSN')}</td>
-                                                <td>{this.state.currencySymbol}{$data.msrp || $data.rate || 0 * this.state.currencyRate}</td>
+                                                <td>
+                                                    {this.state.currencySymbol + (($data.msrp || $data.rate || 0 ) * this.state.currencyRate).toFixed(2)}
+                                                </td>
                                                 <td className="attachment">
                                                     <i className="fas fa-plus-circle"></i>
                                                     <i className="far fa-file-pdf"></i>
