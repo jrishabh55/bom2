@@ -31,7 +31,7 @@ export class VendorTable extends Component {
             currData: [],
             currDataDetails: [],
             showFooter: true,
-            editable: true,
+            editable: false,
             modalDescData: '',
             bomList: [],
             manuDetails: [],
@@ -256,7 +256,7 @@ export class VendorTable extends Component {
                 </Row>
                 <Row>
                     <Col>
-                    <Table bordered>
+                    <Table id="vendorTable" bordered>
                             <thead>
                                 <tr className="tableCaption">
                                 <td colSpan="9">Customer details</td>

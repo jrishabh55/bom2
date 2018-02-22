@@ -6,6 +6,7 @@
     "dependencies": {
         "auth0-js": "^9.2.2",
         "bootstrap": "^4.0.0",
+        "fix-table-header": "^1.0.3",
         "jquery": "^3.3.1",
         "lodash": "^4.17.4",
         "material-ui": "^0.20.0",

@@ -266,7 +266,9 @@ export class BomTable extends Component {
         const data = this.state.searchProd[$index];
         data._source.quantity = 1;
         currTableData.push(data);
-        this.setState({ currData: currTableData });
+        this.setState({ currData: currTableData }, () => {
+            this.calOrderAmount(this.state.currData.length - 1);
+        });
         this.fetchPartDetails('');
     }
 
@@ -284,7 +286,7 @@ export class BomTable extends Component {
             this.getComments($id, index);
         }
     }
-    
+
     sorting($colIndex) {
         const $orderPar = this.orderAsc ? 'asc' : 'desc';
         const currTableData = _.orderBy(this.state.currData, $colIndex, $orderPar);
@@ -439,7 +441,7 @@ export class BomTable extends Component {
                 });
             });
         const csv = (toCSV(data, title));
-        download(`${title}.csv`, csv);        
+        download(`${title}.csv`, csv);
     }
 
     descModal($data, $index) {
@@ -538,7 +540,11 @@ return (
                                 </div>
                             </FormGroup>
                             <span className="font-xs clr-secondary ml-3">Order Amount</span>
-                            <span className="font-l clr-grey ml-2">{this.state.currencySymbol}{this.state.orderAmount * this.state.currencyRate}</span>
+                            <span className="font-l clr-grey ml-2">
+                                {
+                                    this.state.currencySymbol + (this.state.orderAmount * this.state.currencyRate).toFixed(2)
+                                }
+                            </span>
                             {this.saveBtn}
                             <span className="clr-secondary font-xs ml-3">Auto fill</span>
                             <FormGroup className="ml-2">
@@ -599,18 +605,17 @@ return (
                                                 <td>{$index + 1}</td>
                                                 <td>{$data.manufacturer || getProp($data['item_custom_fields'][0], 'value')}</td>
                                                 <td>{$data.company_sku || getProp($data['item_custom_fields'][1], 'value')}</td>
-                                                <td><span onClick={this.descModal.bind(this,$data.description, $index)} data-toggle="modal" data-target="#bomDescModal">{$data.description.substr(0,50) + '...' || '-'}</span></td>
-                                                <td>{this.state.editable ? (
-                                                    <Input type="number" name={`quantity-${$index}`} value={$data.quantity} onChange={() => {
+                                                <td><span onClick={this.descModal.bind(this,$data.description || '-', $index)} data-toggle="modal" data-target="#bomDescModal">{$data.description ? ($data.description.length>50 ? $data.description.substr(0,50) + '...' : $data.description) : '-'}</span></td>
+                                                <td><Input type="number" name={`quantity-${$index}`} value={$data.quantity} onChange={() => {
                                                             this.updateBomFields.call(this, 'quantity', $index);
                                                             this.calOrderAmount.call(this, $index);
                                                     }}/>
-                                                ) : (
-                                                    $data.quantity
-                                                )}</td>
+                                                </td>
                                                 <td>{getProp(this.state.vendorData[$data.line_item_id], 'GST') || $data.tax_percentage}</td>
                                                 <td>{getProp(this.state.vendorData[$data.line_item_id], 'HSN')}</td>
-                                                <td>{this.state.currencySymbol}{$data.msrp || $data.rate || 0 * this.state.currencyRate}</td>
+                                                <td>
+                                                    {this.state.currencySymbol + (($data.msrp || $data.rate || 0 ) * this.state.currencyRate).toFixed(2)}
+                                                </td>
                                                 <td className="attachment">
                                                     <i className="fas fa-plus-circle"></i>
                                                     <i className="far fa-file-pdf"></i>
