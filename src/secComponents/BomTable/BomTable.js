@@ -266,7 +266,9 @@ export class BomTable extends Component {
         const data = this.state.searchProd[$index];
         data._source.quantity = 1;
         currTableData.push(data);
-        this.setState({ currData: currTableData });
+        this.setState({ currData: currTableData }, () => {
+            this.calOrderAmount(this.state.currData.length - 1);
+        });
         this.fetchPartDetails('');
     }
 
