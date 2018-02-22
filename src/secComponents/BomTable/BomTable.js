@@ -260,6 +260,7 @@ export class BomTable extends Component {
         data._source.quantity = 1;
         currTableData.push(data);
         this.setState({ currData: currTableData });
+        this.calOrderAmount($index);
         this.fetchPartDetails('');
     }
 
@@ -312,7 +313,7 @@ export class BomTable extends Component {
         newData[$index]['quantity'] = value;
         this.setState({currData: newData})
         this.state.currData.map(($data, $i) => {
-            amount = amount + (($data.quantity || 0) * ($data.rate || $data._source.msrp));
+            amount = amount + (($data.quantity || $data._source.quantity || 0) * ($data.rate || $data._source.msrp));
             this.setState({orderAmount: amount})
         })
     }
