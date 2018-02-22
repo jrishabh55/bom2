@@ -693,10 +693,10 @@ return (
                             {
                                 this.state.searchProd.map(($prod, $index) => {
                                     return (
-                                                <tr>
-                                                    <td onClick={this.appendInput.bind(this, $index)}><a href="javascript:void()">{$prod._source.company_sku}</a></td>
-                                                    <td>{$prod._source.name}</td>
-                                                </tr>
+                                        <tr>
+                                            <td onClick={this.appendInput.bind(this, $index)}><a href="javascript:void()">{$prod._source.company_sku}</a></td>
+                                            <td>{$prod._source.name}</td>
+                                        </tr>
                                     );
                                 })
                             }
@@ -716,8 +716,8 @@ return (
                                             <Input type="textarea" rows="5" name={`description-${this.state.modalDescData.index}`} value={this.state.modalDescData.text} onChange={this.updateBomFields.bind(this, 'description', this.state.modalDescData.index)}/>
                                         </p>
                                       </div>
-                                      <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Save changes</button>
+                                      <div className="modal-footer">
+                                        <button type="button" className="btn btn-secondary" data-dismiss="modal">Save changes</button>
                                       </div>
                                      </div>
                                   </div>
