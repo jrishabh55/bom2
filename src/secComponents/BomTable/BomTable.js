@@ -512,9 +512,18 @@ return (
                     <Col md="2">
                         <span className="font-xl clr-grey">
                             <Input id="bomTitle" type="text" value={this.state.temp_bom_title} onChange={this.updatetempBomTitle.bind(this)} />
-                            {this.state.bomTitleEditable ? (([<span className="font-md clr-blue" onClick={this.updateBomTitle.bind(this)}>Save</span>, <span onClick={this.cancelBomEdit.bind(this)} className="ml-1 font-md clr-blue"> Cancel</span>])) : ''}
                         </span>
                     </Col>
+                    { 
+                        (() => {
+                            if (this.state.bomTitleEditable) {
+                                return (<Col md="2">
+                                    <span className="font-md clr-blue" onClick={this.updateBomTitle.bind(this)}>Save</span>
+                                    <span onClick={this.cancelBomEdit.bind(this)} className="ml-1 font-md clr-blue"> Cancel</span>
+                                </Col>)
+                            }
+                        })() 
+                    }
                     <Col md="md" className="float-right">
                         <div className="float-right">
                             <FormGroup>
