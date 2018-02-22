@@ -372,7 +372,7 @@ export class VendorTable extends Component {
                                                                             </a>
                                                                         </div>
                                                                         <ul className="ml-3 commentLog">
-                                                                            {$data.comments[$index].map(comment => <li>{comment}</li>)}
+                                                                            {/* $data.comments[$index].map(comment => <li>{comment}</li>) */}
                                                                         </ul>
                                                                         <br />
                                                                         <input type="text" name="comment" data={`comment-${$data.line_item_id}`} placeholder="Add comments or Chat" />
