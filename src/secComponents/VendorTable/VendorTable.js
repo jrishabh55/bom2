@@ -23,6 +23,15 @@ export class VendorTable extends Component {
         this.bomIndex = 0;
         this.bomsToFetch = 10;
         this.showManuDetails = false;
+
+        let comment = [];
+        let history = [];
+
+        for (let i = 0; i < 100; i++) {
+            comment.push([]);
+            history.push([]);
+        }
+
         this.state = {
             currData: [],
             currDataDetails: [],
@@ -30,8 +39,10 @@ export class VendorTable extends Component {
             editable: false,
             modalDescData: '',
             bomList: [],
-            manuDetails: []
-            };
+            manuDetails: [],
+            comments: comment,
+            history: history,
+        };
     }
 
     componentDidMount() {
@@ -48,6 +59,41 @@ export class VendorTable extends Component {
             }
         })
     };
+
+
+    addComment($event, index) {
+        $event.preventDefault();
+        const $id = $event.target.getAttribute('data');
+        const comment = $(`[data="comment-${$id}"]`).val();
+        ApiService.addComment({ bom_id: this.bomId, item_id: $id, msg: comment }).then(() => {
+            const push = this.state.comments;
+            const date = new Date(Date.now());
+            const timestamp = date.toDateString() + ", " + date.toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true });
+            // push[index].push(`${timestamp} ${comment}`);
+            this.setState({ comments: push });
+            toastr.success("Comment added.");
+        });
+    }
+
+    getComments($id, $i, index) {
+        ApiService.fetchComments({ bom_id: this.bomId, item_id: $id })
+            .then(res => {
+                if (!res.found) {
+                    return;
+                }
+                const comments = res._source.comments.map(comment => {
+                    const date = new Date(comment.timestamp);
+                    const timestamp = date.toDateString() + ", " + date.toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true });
+                    return `${timestamp} ${comment.text}`;
+                });
+
+                const push = this.state.currData;
+                push[$i][index].comments;
+
+
+                this.setState({ comments: push });
+            });
+    }
 
     updateBomFields($field, $i, $index) {
         let value = $(`[name=${$field}-${$i}-${$index}]`)[0].value;
@@ -82,10 +128,14 @@ export class VendorTable extends Component {
         this.setState({editable: !this.state.editable}, () => {})
     }
 
-    toggleFooter() {
+    toggleFooter(index, expand, $id, $i, $index) {
         this.setState({
             showFooter: !this.state.showFooter
-        }, () => console.log(this.state.showFooter));
+        }, () => {
+            if (expand) {
+                // this.getComments($id, $i, $index);
+            }
+        });
     }
 
     sorting($colIndex) {
@@ -315,19 +365,18 @@ export class VendorTable extends Component {
                                                         <div className="card-body text-left">
                                                             <div>
                                                                 <Col md="4" className="text-left">
-                                                                    <div style={{display: 'inline-block'}} className="viewActivityLog">
-                                                                        <a onClick={this.toggleFooter.bind(this)} className="viewActivityLog" href=";" role="button" data-toggle="collapse" data-target={`#collapse${$index}`} aria-expanded="true" aria-controls={`collapse${$index}`}>
-                                                                            Hide Comments log <i className="far fa-minus-square"></i>
-                                                                        </a>
-                                                                    </div>
-                                                                    <ul className="ml-3 commentLog">
-                                                                        <li>18th Jan 2018, 12.30pm Comment on Description</li>
-                                                                        <li>18th Jan 2018, 12.30pm Comment on Description</li>
-                                                                        <li>18th Jan 2018, 12.30pm Comment on Description</li>
-                                                                    </ul>
-                                                                    <br/>
-                                                                    <input type="text" name="comment" placeholder="Add comments or chat"/>
-                                                                    <a className="ml-1 commentSub" href="javascript:void()"> Submit</a>
+                                                                        <div style={{ display: 'inline-block' }} className="viewActivityLog">
+                                                                            <a onClick={this.toggleFooter.bind(this, $index)} className="viewActivityLog" href=";" role="button" data-toggle="collapse" data-target={`#collapse${$index}`} aria-expanded="true" aria-controls={`collapse${$index}`}>
+                                                                                Hide Comments log
+                                                                                <i className="ml-1 far fa-minus-square"></i>
+                                                                            </a>
+                                                                        </div>
+                                                                        <ul className="ml-3 commentLog">
+                                                                            {/* $data.comments[$index].map(comment => <li>{comment}</li>) */}
+                                                                        </ul>
+                                                                        <br />
+                                                                        <input type="text" name="comment" data={`comment-${$data.line_item_id}`} placeholder="Add comments or Chat" />
+                                                                        <a className="ml-1 commentSub" href=";" data={$data.line_item_id} onClick={this.addComment.bind(this)}>Submit</a>
                                                                 </Col>
                                                                 <Col md="6" className="text-right">
                                                                     <ul className="commentLog lg-space">

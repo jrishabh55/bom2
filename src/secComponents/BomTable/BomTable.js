@@ -9,8 +9,7 @@ import { StorageService } from '../../services/storage.service';
 import { BomContract } from '../../services/bom.contract';
 import { currencyService } from '../../services/currency.service';
 import toastr from 'toastr';
-import { getProp } from '../../helpers';
-import tableExport from 'tableexport';
+import { getProp, toCSV, download } from '../../helpers';
 
 import '../main.css';
 import './BomTable.css';
@@ -285,7 +284,7 @@ export class BomTable extends Component {
             this.getComments($id, index);
         }
     }
-
+    
     sorting($colIndex) {
         const $orderPar = this.orderAsc ? 'asc' : 'desc';
         const currTableData = _.orderBy(this.state.currData, $colIndex, $orderPar);
@@ -294,7 +293,6 @@ export class BomTable extends Component {
     }
 
     updateBomFields($field, $index) {
-        console.log($field, $index)
         let value = $(`[name=${$field}-${$index}]`)[0].value;
         if($field == 'description') {
             let data = {};
@@ -333,7 +331,7 @@ export class BomTable extends Component {
         ApiService.addComment({ bom_id: this.bomId, item_id: $id, msg: comment }).then(() => {
             const push = this.state.comments;
 
-            const date = Date.now();
+            const date = new Date(Date.now());
             const timestamp = date.toDateString() + ", " + date.toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true });
             push[index].push(`${timestamp} ${comment}`);
             this.setState({ comments: push });
@@ -429,10 +427,19 @@ export class BomTable extends Component {
     }
 
     exportBom() {
-        $("table").tableExport({
-            footers: false,
-
-        });
+        const title = this.state.bom_title.trim();
+        const data = this.state.currData.map(($data, $index) => {
+                $data = $data._source || $data;
+                return ({
+                    "Customer Manufacturer Part No" : $data.company_sku || getProp($data.item_custom_fields[0], 'value'),
+                    "Customer Manufacturer" : $data.manufacturer || getProp($data.item_custom_fields[1], 'value'),
+                    "description": $data.description,
+                    "Price": $data.msrp || $data.rate,
+                    "Quantity": $data.quantity,
+                });
+            });
+        const csv = (toCSV(data, title));
+        download(`${title}.csv`, csv);        
     }
 
     descModal($data, $index) {
@@ -479,11 +486,11 @@ return (
                         <div className="float-right">
                             <FormGroup>
                                 <div className="selectCont alt-dd">
-                                    <Input className="empty-input" type="select" name="timeline">
-                                        <option>Export BOM</option>
-                                    </Input>
+                                    <select className="empty-input" name="export" onChange={this.exportBom.bind(this)}>
+                                        <option>Export</option>
+                                        <option>Export CSV/EXCEL</option>
+                                    </select>
                                 </div>
-                                <span onClick={this.exportBom.bind(this)}>Export</span>
                             </FormGroup>
                             <span className="ml-1 clr-secondary font-xs mr-1">
                                 Currency
