@@ -9,6 +9,7 @@ import { BomContract } from '../../services/bom.contract';
 import { currencyService } from '../../services/currency.service';
 import toastr from 'toastr';
 import { getProp } from '../../helpers';
+import tableExport from 'tableexport';
 
 import '../main.css';
 import './BomTable.css';
@@ -45,7 +46,7 @@ export class BomTable extends Component {
         this.state = {
             currData: [],
             hiddenFooter: true,
-            editable: false,
+            editable: true,
             supp: false,
             addProd: false,
             searchProd: this.searchProdList,
@@ -58,6 +59,7 @@ export class BomTable extends Component {
             orderAmount: 0,
             vendorData: [],
             vendorQuotes: [],
+            modalDescData: {}
             }
     }
 
@@ -280,7 +282,15 @@ export class BomTable extends Component {
     }
 
     updateBomFields($field, $index) {
+        console.log($field, $index)
         let value = $(`[name=${$field}-${$index}]`)[0].value;
+        if($field == 'description') {
+            let data = {};
+            data['text'] = value;
+            data['index'] = $index;
+            this.setState({modalDescData: data});
+        }
+        else{}
         let newData = this.state.currData;
 
         if (newData[$index]._source) {
@@ -399,6 +409,20 @@ export class BomTable extends Component {
         });
     }
 
+    exportBom() {
+        $("table").tableExport({
+            footers: false,
+
+        });
+    }
+
+    descModal($data, $index) {
+        let data = {};
+        data['text'] = $data;
+        data['index'] = $index;
+        this.setState({modalDescData: data});
+    }
+
 
     render() {
         let thisSupplier = '';
@@ -442,6 +466,7 @@ return (
                                         <option>Export BOM</option>
                                     </Input>
                                 </div>
+                                <span onClick={this.exportBom.bind(this)}>Export</span>
                             </FormGroup>
                             <span className="ml-1 clr-secondary font-xs mr-1">
                                 Currency
@@ -545,13 +570,17 @@ return (
                                                     </label> */}
                                                 </td>
                                                 <td>{$index + 1}</td>
-                                                <td><Input type="text" name={`manufacturer-${$index}`} disabled={this.state.editable && this.isNew ? null : 'disabled'} value={$data.manufacturer || getProp($data['item_custom_fields'][0], 'value_formatted')} onChange={this.updateBomFields.bind(this, 'manufacturer', $index)}/></td>
-                                                <td><Input type="text" name={`company_sku-${$index}`} disabled={this.state.editable && this.isNew ? null : 'disabled'} value={$data.company_sku || getProp($data['item_custom_fields'][1], 'value_formatted')} onChange={this.updateBomFields.bind(this, 'company_sku', $index)}/></td>
-                                                <td><Input type="text" name={`description-${$index}`} disabled={this.state.editable ? null : 'disabled'} value={$data.description} onChange={this.updateBomFields.bind(this, 'description', $index)}/></td>
-                                                <td><Input type="number" name={`quantity-${$index}`} disabled={this.state.editable ? null : 'disabled'} value={$data.quantity} onChange={() => {
-                                                        this.updateBomFields.call(this, 'quantity', $index);
-                                                        this.calOrderAmount.call(this, $index);
-                                                }}/></td>
+                                                <td>{$data.manufacturer || getProp($data['item_custom_fields'][0], 'value_formatted')}</td>
+                                                <td>{$data.company_sku || getProp($data['item_custom_fields'][1], 'value_formatted')}</td>
+                                                <td><span onClick={this.descModal.bind(this,$data.description, $index)} data-toggle="modal" data-target="#bomDescModal">{$data.description.substr(0,50) + '...' || '-'}</span></td>
+                                                <td>{this.state.editable ? (
+                                                    <Input type="number" name={`quantity-${$index}`} value={$data.quantity} onChange={() => {
+                                                            this.updateBomFields.call(this, 'quantity', $index);
+                                                            this.calOrderAmount.call(this, $index);
+                                                    }}/>
+                                                ) : (
+                                                    $data.quantity
+                                                )}</td>
                                                 <td>{getProp(this.state.vendorData[$data.line_item_id], 'GST') || $data.tax_percentage}</td>
                                                 <td>{getProp(this.state.vendorData[$data.line_item_id], 'HSN')}</td>
                                                 <td>{this.state.currencySymbol}{$data.msrp || $data.rate * this.state.currencyRate}</td>
@@ -582,7 +611,7 @@ return (
                                                                 </span>)
                                                                 : null
                                                         }
-    
+
                                                         <div id={`collapse${$index}`} className="collapse" aria-labelledby={`heading${$index}`} data-parent="#accordion">
                                                             <div className="card-body text-left">
                                                                 <div>
@@ -651,6 +680,26 @@ return (
                             }
                                     </tbody>
                                 </table>
+                                <div className="modal fade" id="bomDescModal">
+                                  <div className="modal-dialog" role="document">
+                                    <div className="modal-content">
+                                      <div className="modal-header">
+                                        <h5 className="modal-title">Description</h5>
+                                        <button type="button" className="close" data-dismiss="modal" aria-label="Close">
+                                          <span aria-hidden="true">&times;</span>
+                                        </button>
+                                      </div>
+                                      <div className="modal-body">
+                                        <p>
+                                            <Input type="textarea" rows="5" name={`description-${this.state.modalDescData.index}`} value={this.state.modalDescData.text} onChange={this.updateBomFields.bind(this, 'description', this.state.modalDescData.index)}/>
+                                        </p>
+                                      </div>
+                                      <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Save changes</button>
+                                      </div>
+                                     </div>
+                                  </div>
+                                </div>
                         </Col>
 
                     </Col>

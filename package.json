@@ -22,6 +22,7 @@
         "reactstrap": "^5.0.0-alpha.4",
         "redux": "^3.7.2",
         "semantic-ui-react": "^0.78.2",
+        "tableexport": "^5.0.0",
         "toastr": "^2.1.4",
         "typeface-roboto": "0.0.54",
         "xlsx": "^0.11.12"

@@ -10,12 +10,13 @@ import {StorageService} from './services/storage.service';
 import { AuthService } from './services/auth.service';
 
 class App extends Component {
-	
+
 	constructor(props) {
 		super(props);
 		this.dropZone = null;
 		this.state = {
-            bomList: []
+            bomList: [],
+			data: []
         };
 
 		this.boms = [];
@@ -34,6 +35,31 @@ class App extends Component {
 	getContactId() {
         return localStorage.getItem('contactId');
     }
+
+	loadFile(files) {
+		const f = files[0];
+		var name = f.name;
+		const reader = new FileReader();
+		reader.onload = (evt) => {
+			/* Parse data */
+			const bstr = evt.target.result;
+			const wb = XLSX.read(bstr, { type: 'binary' });
+			/* Get first worksheet */
+			const wsname = wb.SheetNames[0];
+			const ws = wb.Sheets[wsname];
+			/* Convert array of arrays */
+			const data = XLSX.utils.sheet_to_json(ws, { header: 1 });
+			/* Update state */
+			console.log(data);
+			this.props.history.push({
+				pathname: '/bom/new',
+				state: {
+					data: data
+				}
+			});
+		};
+		reader.readAsBinaryString(f);
+	}
 
 	render() {
 		for (var i = 0; i < this.state.bomList.length; i++) {
