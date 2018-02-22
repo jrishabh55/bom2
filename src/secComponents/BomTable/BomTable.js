@@ -1,4 +1,5 @@
 import React, {Component} from 'react';
+import {Link} from 'react-router-dom';
 import * as $ from 'jquery';
 import * as _ from 'lodash';
 import { Container, Row, Col, FormGroup, Label, Input, Table } from 'reactstrap';
@@ -50,6 +51,7 @@ export class BomTable extends Component {
             supp: false,
             addProd: false,
             searchProd: this.searchProdList,
+            temp_bom_title: "Untitled",
             bom_title: "Untitled",
             comments: comment,
             history: history,
@@ -60,7 +62,8 @@ export class BomTable extends Component {
             vendorData: [],
             vendorQuotes: [],
             modalDescData: {},
-            searchItemValue: ''
+            searchItemValue: '',
+            bomTitleEditable: false
             }
     }
 
@@ -94,7 +97,7 @@ export class BomTable extends Component {
             let prefVend = StorageService.getItem('prefVendors');
             prefVend = prefVend.trim().split(',').map(vendor => vendor.trim());
             ApiService.get(`/customer/${this.getContactId()}/bom/${this.bomId}`).then(res => {
-                this.setState({bom_title: res.estimate.custom_field_hash.cf_title});
+                this.setState({bom_title: res.estimate.custom_field_hash.cf_title, temp_bom_title: res.estimate.custom_field_hash.cf_title});
                 this.currBomData = res.estimate.line_items;
                 this.setState({currData: this.currBomData}, () => {
                     let data = this.state.vendorQuotes;
@@ -129,6 +132,10 @@ export class BomTable extends Component {
         else {
             this.saveBtn = <span className="btn fill-btn ml-3" onClick={this.placeOrder.bind(this)}>Place Order</span>;
         }
+
+        $( "#bomTitle" ).on('focus', () => {
+            this.setState({bomTitleEditable: true})
+        })
 
     }
 
@@ -260,7 +267,6 @@ export class BomTable extends Component {
         data._source.quantity = 1;
         currTableData.push(data);
         this.setState({ currData: currTableData });
-        this.calOrderAmount($index);
         this.fetchPartDetails('');
     }
 
@@ -313,7 +319,7 @@ export class BomTable extends Component {
         newData[$index]['quantity'] = value;
         this.setState({currData: newData})
         this.state.currData.map(($data, $i) => {
-            amount = amount + (($data.quantity || $data._source.quantity || 0) * ($data.rate || $data._source.msrp));
+            amount = amount + (($data.quantity || 0) * ($data.rate || $data._source.msrp));
             this.setState({orderAmount: amount})
         })
     }
@@ -397,8 +403,16 @@ export class BomTable extends Component {
         )
     }
 
+    updatetempBomTitle() {
+        this.setState({temp_bom_title: $('#bomTitle')[0].value})
+    }
+
     updateBomTitle() {
-        this.setState({bom_title: $('#bomTitle')[0].value})
+        this.setState({bom_title: $('#bomTitle')[0].value, bomTitleEditable: false});
+    }
+
+    cancelBomEdit() {
+        this.setState({bomTitleEditable: false, temp_bom_title: this.state.bom_title});
     }
 
     removeLineItem($index) {
@@ -461,7 +475,7 @@ return (
             <Container fluid={true}>
                 <Row id="bomHead">
                     <Col md="6">
-                        <span className="font-md clr-blue">Saved BOM</span>
+                        <span className="font-md clr-blue"><Link to ="/bom">Saved BOM</Link></span>
                     </Col>
                     <Col md="6">
                         <div className="float-right">
@@ -489,7 +503,10 @@ return (
                     </Col>
                     <div className="clearfix"/>
                     <Col md="2">
-                        <span className="font-xl clr-grey"><Input id="bomTitle" type="text" disabled={this.state.editable ? null : 'disabled'} value={this.state.bom_title} onChange={this.updateBomTitle.bind(this)} /></span>
+                        <span className="font-xl clr-grey">
+                            <Input id="bomTitle" type="text" value={this.state.temp_bom_title} onChange={this.updatetempBomTitle.bind(this)} />
+                            {this.state.bomTitleEditable ? (([<span className="font-md clr-blue" onClick={this.updateBomTitle.bind(this)}>Save</span>, <span onClick={this.cancelBomEdit.bind(this)} className="ml-1 font-md clr-blue"> Cancel</span>])) : ''}
+                        </span>
                     </Col>
                     <Col md="md" className="float-right">
                         <div className="float-right">
@@ -575,8 +592,8 @@ return (
                                                     </label> */}
                                                 </td>
                                                 <td>{$index + 1}</td>
-                                                <td>{$data.manufacturer || getProp($data['item_custom_fields'][0], 'value_formatted')}</td>
-                                                <td>{$data.company_sku || getProp($data['item_custom_fields'][1], 'value_formatted')}</td>
+                                                <td>{$data.manufacturer || getProp($data['item_custom_fields'][1], 'value')}</td>
+                                                <td>{$data.company_sku || getProp($data['item_custom_fields'][0], 'value')}</td>
                                                 <td><span onClick={this.descModal.bind(this,$data.description, $index)} data-toggle="modal" data-target="#bomDescModal">{$data.description.substr(0,50) + '...' || '-'}</span></td>
                                                 <td>{this.state.editable ? (
                                                     <Input type="number" name={`quantity-${$index}`} value={$data.quantity} onChange={() => {
