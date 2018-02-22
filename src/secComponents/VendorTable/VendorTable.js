@@ -27,11 +27,6 @@ export class VendorTable extends Component {
         let comment = [];
         let history = [];
 
-        for (let i = 0; i < 100; i++) {
-            comment.push([]);
-            history.push([]);
-        }
-
         this.state = {
             currData: [],
             currDataDetails: [],
@@ -40,8 +35,6 @@ export class VendorTable extends Component {
             modalDescData: '',
             bomList: [],
             manuDetails: [],
-            comments: comment,
-            history: history,
         };
     }
 
@@ -66,11 +59,8 @@ export class VendorTable extends Component {
         const $id = $event.target.getAttribute('data');
         const comment = $(`[data="comment-${$id}"]`).val();
         ApiService.addComment({ bom_id: this.bomId, item_id: $id, msg: comment }).then(() => {
-            const push = this.state.comments;
             const date = new Date(Date.now());
             const timestamp = date.toDateString() + ", " + date.toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true });
-            // push[index].push(`${timestamp} ${comment}`);
-            this.setState({ comments: push });
             toastr.success("Comment added.");
         });
     }
@@ -81,6 +71,7 @@ export class VendorTable extends Component {
                 if (!res.found) {
                     return;
                 }
+                
                 const comments = res._source.comments.map(comment => {
                     const date = new Date(comment.timestamp);
                     const timestamp = date.toDateString() + ", " + date.toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true });
@@ -88,10 +79,9 @@ export class VendorTable extends Component {
                 });
 
                 const push = this.state.currData;
-                push[$i][index].comments;
+                push[$i][index].comments = comments;
 
-
-                this.setState({ comments: push });
+                this.setState({ currData: push });
             });
     }
 
@@ -116,7 +106,7 @@ export class VendorTable extends Component {
             let data = this.state.currData;
             let dataDetails = this.state.currDataDetails;
             ApiService.get(url).then(res => {
-                data.push(res.estimate.line_items);
+                data.push(res.estimate.line_items.map(item => Object.assign(item, {comments: []})));
                 dataDetails.push(res.estimate);
                 this.setState({currData: data, currDataDetails: dataDetails});
             });
@@ -128,12 +118,12 @@ export class VendorTable extends Component {
         this.setState({editable: !this.state.editable}, () => {})
     }
 
-    toggleFooter(index, expand, $id, $i, $index) {
+    toggleFooter(index, expand = false, $id, $i, $index) {
         this.setState({
             showFooter: !this.state.showFooter
         }, () => {
             if (expand) {
-                // this.getComments($id, $i, $index);
+                this.getComments($id, $i, $index);
             }
         });
     }
@@ -165,23 +155,23 @@ export class VendorTable extends Component {
 
                 const url = `/vendor/${StorageService.getItem('contactId')}/bom/${this.state.currDataDetails.estimate_id}/quote/${$data.line_item_id}`;
                 const data =  this.quotedData($i, $index);
-                ApiService.post(url, data).then(console.log);
-            })
+                ApiService.post(url, data);
+            });
         });
     }
 
     saveOrder($data, $data2, $index, $i) {
         let url = `/vendor/${StorageService.getItem('contactId')}/bom/${this.state.currDataDetails[$i].estimate_id}/quote/${$data.line_item_id}`;
         let data = {
-                    	list_price: $data.item_total || '',
-                        discount: $data.discount || '',
-                        time_to_ship: $data.time_to_ship || '',
-                        current_stock: $data.current_stock || '',
-                        HSN: $data.hsn_or_sac || '',
-                        GST: $data.tax_percentage || '',
-                        delivery_city: $data.delivery_city || '',
-                        remarks: $data.remarks || ''
-                    };
+                list_price: $data.item_total || '',
+                discount: $data.discount || '',
+                time_to_ship: $data.time_to_ship || '',
+                current_stock: $data.current_stock || '',
+                HSN: $data.hsn_or_sac || '',
+                GST: $data.tax_percentage || '',
+                delivery_city: $data.delivery_city || '',
+                remarks: $data.remarks || ''
+            };
         ApiService.post(url, data).then(res => toastr.success(`Your bid has been placed for ${$data.line_item_id}`))
     }
 
@@ -192,9 +182,7 @@ export class VendorTable extends Component {
     manuDetails($data, $i) {
         ApiService.get(`/contacts/${$data.customer_id}`).then(res => {
             this.setState({manuDetails: res.contact});
-            console.log(res.contact)
         });
-        console.log($data)
     }
 
     render() {
@@ -343,7 +331,7 @@ export class VendorTable extends Component {
                                                     this.state.showFooter ? (
                                                         <div>
                                                             <Col md="6">
-                                                                <a onClick={this.toggleFooter.bind(this)} className="viewActivityLog text-right" href=";" role="button" data-toggle="collapse" data-target={`#collapse${$index}`} aria-expanded="true" aria-controls={`collapse${$index}`}>
+                                                                <a onClick={this.toggleFooter.bind(this, $index, true, $data.line_item_id, $i, $index)} className="viewActivityLog text-right" href=";" role="button" data-toggle="collapse" data-target={`#collapse-${$data.line_item_id}`} aria-expanded="true" aria-controls={`collapse-${$data.line_item_id}`}>
                                                                     <i className="mr-1 far fa-plus-square"></i> Add Comment to Customer
                                                                 </a>
                                                                 <span className="lastAct ml-3">Comment from Customer</span>
@@ -351,7 +339,7 @@ export class VendorTable extends Component {
                                                             <Col>
                                                                 <div className="float-right">
                                                                     <span className="lastAct">Quantity changes dony by Customer 18th Jan 2018, 12.30pm</span>
-                                                                    <a onClick={this.toggleFooter.bind(this)} className="ml-3 viewActivityLog text-right" href=";" role="button" data-toggle="collapse" data-target={`#collapse${$index}`} aria-expanded="true" aria-controls={`collapse${$index}`}>
+                                                                    <a onClick={this.toggleFooter.bind(this)} className="ml-3 viewActivityLog text-right" href=";" role="button" data-toggle="collapse" data-target={`#collapse-${$data.line_item_id}`} aria-expanded="true" aria-controls={`collapse-${$data.line_item_id}`}>
                                                                         View Full activity log <i className="ml-1 far fa-plus-square"></i>
                                                                     </a>
                                                                 </div>
@@ -360,19 +348,18 @@ export class VendorTable extends Component {
                                                     ) : null
                                                 }
 
-
-                                                    <div id={`collapse${$index}`} className="collapse" aria-labelledby={`heading${$index}`} data-parent="#accordion">
+                                                    <div id={`collapse-${$data.line_item_id}`} className="collapse" aria-labelledby={`heading${$index}`} data-parent="#accordion">
                                                         <div className="card-body text-left">
                                                             <div>
                                                                 <Col md="4" className="text-left">
                                                                         <div style={{ display: 'inline-block' }} className="viewActivityLog">
-                                                                            <a onClick={this.toggleFooter.bind(this, $index)} className="viewActivityLog" href=";" role="button" data-toggle="collapse" data-target={`#collapse${$index}`} aria-expanded="true" aria-controls={`collapse${$index}`}>
+                                                                            <a onClick={this.toggleFooter.bind(this, $index)} className="viewActivityLog" href=";" role="button" data-toggle="collapse" data-target={`#collapse-${$data.line_item_id}`} aria-expanded="true" aria-controls={`collapse-${$data.line_item_id}`}>
                                                                                 Hide Comments log
                                                                                 <i className="ml-1 far fa-minus-square"></i>
                                                                             </a>
                                                                         </div>
                                                                         <ul className="ml-3 commentLog">
-                                                                            {/* $data.comments[$index].map(comment => <li>{comment}</li>) */}
+                                                                            {$data.comments.map(comment => <li>{comment}</li>)}
                                                                         </ul>
                                                                         <br />
                                                                         <input type="text" name="comment" data={`comment-${$data.line_item_id}`} placeholder="Add comments or Chat" />
@@ -386,10 +373,8 @@ export class VendorTable extends Component {
                                                                         <li>Quantity changes to 10 done by Customer - 18th Jan 2018 , 12.30pm</li> */}
                                                                     </ul>
                                                                 </Col>
-                                                                <Col md="2" className="text-right" style={{
-                                                                        paddingRight: '0'
-                                                                    }}>
-                                                                    <a onClick={this.toggleFooter.bind(this)} className="viewActivityLog" href=";" role="button" data-toggle="collapse" data-target={`#collapse${$index}`} aria-expanded="true" aria-controls={`collapse${$index}`}>
+                                                                <Col md="2" className="text-right" style={{ paddingRight: '0' }}>
+                                                                    <a onClick={this.toggleFooter.bind(this)} className="viewActivityLog" href=";" role="button" data-toggle="collapse" data-target={`#collapse-${$data.line_item_id}`} aria-expanded="true" aria-controls={`collapse-${$data.line_item_id}`}>
                                                                         Hide activity log <i className="far fa-minus-square"></i>
                                                                     </a>
                                                                 </Col>
