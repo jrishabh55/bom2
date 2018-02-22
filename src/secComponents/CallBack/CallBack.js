@@ -1,7 +1,9 @@
 import React, {Component} from 'react';
 import {Auth0} from '../../services/auth0.service';
 import history from '../../helpers/history';
+import { StorageService } from '../../services/storage.service';
 import { BrowserRouter as Router, Route, Switch, Redirect } from 'react-router-dom';
+import { AuthService } from '../../services/auth.service';
 
 export class CallBack extends Component {
     componentDidMount() {
@@ -10,22 +12,22 @@ export class CallBack extends Component {
 
     handleAuthentication() {
 		Auth0.auth0.parseHash((err, authResult) => {
-            console.log('a')
 			if (authResult && authResult.accessToken) {
 				this.setSession(authResult);
 			}
             else if (err) {
 				history.replace('/');
-				console.log(err);
 			}
 		});
 	}
 
     setSession(authResult) {
         const expiresAt = JSON.stringify((authResult.expiresIn * 1000) + new Date().getTime());
-        localStorage.setItem('access_token', authResult.accessToken);
-        localStorage.setItem('expires_at', expiresAt);
-        history.replace('/bom');
+        StorageService.setItem('access_token', authResult.accessToken);
+        StorageService.setItem('expires_at', expiresAt);
+        AuthService.fetchUser().then(() => {
+            history.replace('/bom');
+        });
     }
 
     render() {

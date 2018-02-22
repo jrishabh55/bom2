@@ -27,7 +27,6 @@ export class BomTable extends Component {
             GBP: 0.011232
         };
         this.saveBtn;
-        this.quantity;
         this.totalAmount = [];
         this.userDetails;
         this.currTableData;
@@ -87,7 +86,6 @@ export class BomTable extends Component {
         if (!this.isNew) {
             ApiService.get(`/contacts/${this.getContactId()}`).then(res => {
                 this.userDetails = res.contact;
-                console.log(this.userDetails)
             });
             let prefVend = StorageService.getItem('prefVendors');
             prefVend = prefVend.trim().split(',').map(vendor => vendor.trim());
@@ -213,43 +211,49 @@ export class BomTable extends Component {
         });
     }
 
-    updateOrder() {
-        let data = {
+    updateOrder(redirect = true) {
+        const data = {
             items: this.state.currData.map(($data, $index) => {
-                let qty = $(`[name=quantity-${$index}]`)[0].value;
+                $data = $data._source || $data;
+                const qty = $(`[name=quantity-${$index}]`)[0].value;
+                console.log($data.quantity, qty);
                 return ({
-                    "description": $data.description || $data._source.description,
+                    "description": $data.description,
                     "item_order": $index,
-                    "bcy_rate": $data.bcy_rate || $data._source.msrp,
-                    "rate": $data.msrp || $data.rate || $data._source.msrp,
+                    "bcy_rate": $data.msrp || $data.bcy_rate,
+                    "rate": $data.msrp || $data.rate,
                     "quantity": $data.quantity,
-                    "item_total": $data.item_total || (($data.quantity || 0) * ($data.rate || $data._source.msrp)),
+                    "item_total": $data.item_total || (($data.quantity || 0) * ($data.rate || $data.msrp)),
+                    "line_item_id": $data.line_item_id,
                     "item_custom_fields": [
                         {
                             "label": "Customer Manufacturer Part No",
-                            "value": $data.item_custom_fields ? $data.item_custom_fields[0].value :  $data._source.company_sku
+                            "value": $data.company_sku || getProp($data.item_custom_fields[0], 'value')
                         },
                         {
                             "label": "Customer Manufacturer",
-                            "value": $data.item_custom_fields ? $data.item_custom_fields[1].value : $data._source.manufacturer
+                            "value": $data.manufacturer || getProp($data.item_custom_fields[1], 'value')
                         }
                     ]
 
                 });
             }),
             title: this.state.bom_title
-        }
-        console.log(data)
-        ApiService.post(`/customer/${StorageService.getItem('contactId')}/bom/${this.bomId}`, data).then(res => {
-            console.log(res)
+        };
+
+        return ApiService.put(`/customer/${StorageService.getItem('contactId')}/bom/${this.bomId}`, data).then(res => {
+            if (redirect) {
+                this.props.history.push('/bom');
+            }
             toastr.success(res.message);
-            this.props.history.push('/bom');
         });
     }
 
     appendInput($index) {
         let currTableData = this.state.currData;
-        currTableData.push(this.state.searchProd[$index]);
+        const data = this.state.searchProd[$index];
+        data._source.quantity = 1;
+        currTableData.push(data);
         this.setState({ currData: currTableData });
     }
 
@@ -278,9 +282,13 @@ export class BomTable extends Component {
     updateBomFields($field, $index) {
         let value = $(`[name=${$field}-${$index}]`)[0].value;
         let newData = this.state.currData;
-        console.log(newData);
-        newData[$index]._source[$field] = value;
-        this.setState({currData: newData})
+
+        if (newData[$index]._source) {
+            newData[$index]._source[$field] = value;
+        } else {
+            newData[$index][$field] = value;
+        }
+        this.setState({currData: newData});
     }
 
     calOrderAmount($index = 0) {
@@ -295,12 +303,18 @@ export class BomTable extends Component {
         })
     }
 
-    addComment($event) {
+    addComment($event, index) {
         $event.preventDefault();
         const $id = $event.target.getAttribute('data');
         const comment = $(`[data="comment-${$id}"]`).val();
         ApiService.addComment({ bom_id: this.bomId, item_id: $id, msg: comment }).then(() => {
-            alert("Comment added.");
+            const push = this.state.comments;
+
+            const date = Date.now();
+            const timestamp = date.toDateString() + ", " + date.toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true });
+            push[index].push(`${timestamp} ${comment}`);
+            this.setState({ comments: push });
+            toastr.success("Comment added.");
         });
     }
 
@@ -372,6 +386,18 @@ export class BomTable extends Component {
         this.setState({bom_title: $('#bomTitle')[0].value})
     }
 
+    removeLineItem($index) {
+        const data = [...this.state.currData.slice(0, $index), ...this.state.currData.slice($index + 1)];
+        this.setState({ 'currData': data }, () => {
+            if (!this.isNew) {
+                this.updateOrder(false).then(() => {
+                  toastr.success("Item has been removed");
+                });
+            } else {
+                toastr.success("Item has been removed");
+            }
+        });
+    }
 
 
     render() {
@@ -479,7 +505,7 @@ return (
                             <thead>
                                 <tr className="tableCaption">
                                     <td colSpan="10" className="clr-form-2 mainCaption">ShopElect Webiste</td>
-                                    {this.state.vendorData.map(($vData, $i) => {return this.dataCaption($i)})}
+                                    { this.state.vendorData.map(($vData, $i) => this.dataCaption($i)) }
                                     <td></td>
                                     <td></td>
                                 </tr>
@@ -508,19 +534,24 @@ return (
                                 {
                                     this.state.currData.map(($data, $index) => {
                                         $data = $data._source || $data;
-                                        return ([
+                                        return ( () => {
+                                            let d = [(
                                             <tr className="tableRow" key={$index}>
-                                                <td>
-                                                    <label className="checkContainer">
+                                                <td onClick={this.removeLineItem.bind(this,$index)}>
+                                                    <span><i className="fas fa-times cancel"></i></span>
+                                                    {/* <label className="checkContainer">
                                                         <Input type="checkbox" name="signedIn"/>
                                                         <span className="checkmark"></span>
-                                                    </label>
+                                                    </label> */}
                                                 </td>
                                                 <td>{$index + 1}</td>
                                                 <td><Input type="text" name={`manufacturer-${$index}`} disabled={this.state.editable && this.isNew ? null : 'disabled'} value={$data.manufacturer || getProp($data['item_custom_fields'][0], 'value_formatted')} onChange={this.updateBomFields.bind(this, 'manufacturer', $index)}/></td>
                                                 <td><Input type="text" name={`company_sku-${$index}`} disabled={this.state.editable && this.isNew ? null : 'disabled'} value={$data.company_sku || getProp($data['item_custom_fields'][1], 'value_formatted')} onChange={this.updateBomFields.bind(this, 'company_sku', $index)}/></td>
                                                 <td><Input type="text" name={`description-${$index}`} disabled={this.state.editable ? null : 'disabled'} value={$data.description} onChange={this.updateBomFields.bind(this, 'description', $index)}/></td>
-                                                <td><Input type="number" name={`quantity-${$index}`} disabled={this.state.editable ? null : 'disabled'} value={$data.quantity} onChange={this.calOrderAmount.bind(this, $index)}/></td>
+                                                <td><Input type="number" name={`quantity-${$index}`} disabled={this.state.editable ? null : 'disabled'} value={$data.quantity} onChange={() => {
+                                                        this.updateBomFields.call(this, 'quantity', $index);
+                                                        this.calOrderAmount.call(this, $index);
+                                                }}/></td>
                                                 <td>{getProp(this.state.vendorData[$data.line_item_id], 'GST') || $data.tax_percentage}</td>
                                                 <td>{getProp(this.state.vendorData[$data.line_item_id], 'HSN')}</td>
                                                 <td>{this.state.currencySymbol}{$data.msrp || $data.rate * this.state.currencyRate}</td>
@@ -534,63 +565,68 @@ return (
                                                 )}
                                                 <td>{$data.custNotes}</td>
                                                 <td>{$data.bidSts}</td>
-                                            </tr>,
-                                            <tr>
-                                                <td colSpan={this.state.supp ? 27 : 15} className="tableFooter">
-                                                    {
-                                                        this.state.hiddenFooter !== $index
-                                                            ? (<span>
-                                                                <span className="lastAct">{/* Quantity changes dony by Customer 18th Jan 2018, 12.30pm */}</span>
-                                                                <a onClick={this.toggleFooter.bind(this, $index, true, $data.line_item_id)} className="viewActivityLog text-right" href=";" role="button" data-toggle="collapse" data-target={`#collapse${$index}`} aria-expanded="true" aria-controls={`collapse${$index}`}>
-                                                                    View Full activity log
-                                                                    <i className="ml-1 far fa-plus-square"></i>
-                                                                </a>
-                                                            </span>)
-                                                            : null
-                                                    }
+                                            </tr>)];
+                                            if (!this.isNew) {
 
-                                                    <div id={`collapse${$index}`} className="collapse" aria-labelledby={`heading${$index}`} data-parent="#accordion">
-                                                        <div className="card-body text-left">
-                                                            <div>
-                                                                <Col md="6">
-                                                                    <div style={{ display: 'inline-block' }} className="viewActivityLog">
-                                                                        <a onClick={this.toggleFooter.bind(this, $index)} className="viewActivityLog" href=";" role="button" data-toggle="collapse" data-target={`#collapse${$index}`} aria-expanded="true" aria-controls={`collapse${$index}`}>
-                                                                            Hide Comments log
-                                                                            <i className="ml-1 far fa-minus-square"></i>
-                                                                        </a>
-                                                                    </div>
-                                                                    <ul className="ml-3 commentLog">
-                                                                        {this.state.comments[$index].map(comment => <li>{comment}</li>)}
-                                                                    </ul>
-                                                                    <br/>
-                                                                    <input type="text" name="comment" data={`comment-${$data.line_item_id}`} placeholder="Add comments or Chat"/>
-                                                                    <a className="ml-1 commentSub" href=";" data={$data.line_item_id} onClick={this.addComment.bind(this)}>Submit</a>
-                                                                </Col>
-                                                                <Col md="6">
-                                                                    <div className="float-right">
-                                                                        <span>
-                                                                            <ul className="commentLog lg-space">
-                                                                            {/*
-                                                                                <li>Quantity changes to 10 done by Customer - 18th Jan 2018 , 12.30pm</li>
-                                                                                <li>Quantity changes to 10 done by Customer - 18th Jan 2018 , 12.30pm</li>
-                                                                                <li>Quantity changes to 10 done by Customer - 18th Jan 2018 , 12.30pm</li>
-                                                                                <li>Quantity changes to 10 done by Customer - 18th Jan 2018 , 12.30pm</li>
-                                                                            */}</ul>
-                                                                        </span>
-                                                                        <span>
+                                                d.push(
+                                                <tr>
+                                                    <td colSpan={this.state.supp ? 27 : 15} className="tableFooter">
+                                                        {
+                                                            this.state.hiddenFooter !== $index
+                                                                ? (<span>
+                                                                    <span className="lastAct">{/* Quantity changes dony by Customer 18th Jan 2018, 12.30pm */}</span>
+                                                                    <a onClick={this.toggleFooter.bind(this, $index, true, $data.line_item_id)} className="viewActivityLog text-right" href=";" role="button" data-toggle="collapse" data-target={`#collapse${$index}`} aria-expanded="true" aria-controls={`collapse${$index}`}>
+                                                                        View Full activity log
+                                                                        <i className="ml-1 far fa-plus-square"></i>
+                                                                    </a>
+                                                                </span>)
+                                                                : null
+                                                        }
+    
+                                                        <div id={`collapse${$index}`} className="collapse" aria-labelledby={`heading${$index}`} data-parent="#accordion">
+                                                            <div className="card-body text-left">
+                                                                <div>
+                                                                    <Col md="6">
+                                                                        <div style={{ display: 'inline-block' }} className="viewActivityLog">
                                                                             <a onClick={this.toggleFooter.bind(this, $index)} className="viewActivityLog" href=";" role="button" data-toggle="collapse" data-target={`#collapse${$index}`} aria-expanded="true" aria-controls={`collapse${$index}`}>
-                                                                                Hide activity log
+                                                                                Hide Comments log
                                                                                 <i className="ml-1 far fa-minus-square"></i>
                                                                             </a>
-                                                                        </span>
-                                                                    </div>
-                                                                </Col>
+                                                                        </div>
+                                                                        <ul className="ml-3 commentLog">
+                                                                            {this.state.comments[$index].map(comment => <li>{comment}</li>)}
+                                                                        </ul>
+                                                                        <br/>
+                                                                        <input type="text" name="comment" data={`comment-${$data.line_item_id}`} placeholder="Add comments or Chat"/>
+                                                                        <a className="ml-1 commentSub" href=";" data={$data.line_item_id} onClick={this.addComment.bind(this)}>Submit</a>
+                                                                    </Col>
+                                                                    <Col md="6">
+                                                                        <div className="float-right">
+                                                                            <span>
+                                                                                <ul className="commentLog lg-space">
+                                                                                {/*
+                                                                                    <li>Quantity changes to 10 done by Customer - 18th Jan 2018 , 12.30pm</li>
+                                                                                    <li>Quantity changes to 10 done by Customer - 18th Jan 2018 , 12.30pm</li>
+                                                                                    <li>Quantity changes to 10 done by Customer - 18th Jan 2018 , 12.30pm</li>
+                                                                                    <li>Quantity changes to 10 done by Customer - 18th Jan 2018 , 12.30pm</li>
+                                                                                */}</ul>
+                                                                            </span>
+                                                                            <span>
+                                                                                <a onClick={this.toggleFooter.bind(this, $index)} className="viewActivityLog" href=";" role="button" data-toggle="collapse" data-target={`#collapse${$index}`} aria-expanded="true" aria-controls={`collapse${$index}`}>
+                                                                                    Hide activity log
+                                                                                    <i className="ml-1 far fa-minus-square"></i>
+                                                                                </a>
+                                                                            </span>
+                                                                        </div>
+                                                                    </Col>
+                                                                </div>
                                                             </div>
                                                         </div>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        ])
+                                                    </td>
+                                                </tr>);
+                                            }
+                                            return d;
+                                    })()
                                     })
                                 }
                             </tbody>
@@ -600,7 +636,7 @@ return (
                                 <Input onChange={this.addMultiple.bind(this)} type="text" placeholder="Add MPN or SKU"/>
                                 <span id="btnMPN">Paste</span>
                             </div>
-                            <table class="table table-sm">
+                            <table className="table table-sm">
 
                                 <tbody>
                             {

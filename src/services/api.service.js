@@ -32,6 +32,14 @@ class ApiService {
     }).then(this.parse);
   }
 
+  async put(url, body) {
+    return fetch(this.buildUrl(url), {
+      method: 'PUT',
+      headers: this.headers,
+      body: JSON.stringify(body)
+    }).then(this.parse);
+  }
+
   async delete(url, query) {
     return fetch(this.buildUrl(url, query), { method: 'DELETE', headers: this.headers }).then(this.parse);
   }

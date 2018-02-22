@@ -237,7 +237,7 @@ export class VendorTable extends Component {
                                 <th className="sort lg-width" onClick={this.sorting.bind(this, 'product_type')}>Item Group (Sub Brand)</th>
                                 <th className="sort" onClick={this.sorting.bind(this, 'qty')}>Qty</th>
                                 <th>Current Stock</th>
-                                <th>GST %</th>
+                                <th>GST%</th>
                                 <th>HSN</th>
                                 <th>List Price</th>
                                 <th>Discount</th>

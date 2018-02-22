@@ -5,10 +5,21 @@ import toastr from 'toastr';
 class Auth0 {
 
   constructor() {
+
+    this.isLocal = Boolean(
+      window.location.hostname === 'localhost' ||
+      // [::1] is the IPv6 localhost address.
+      window.location.hostname === '[::1]' ||
+      // 127.0.0.1/8 is considered localhost for IPv4.
+      window.location.hostname.match(
+        /^127(?:\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$/
+      )
+    );
+
     this.auth0 = new auth0.WebAuth({
       domain: 'shopelect.auth0.com',
       clientID: 'Ppfj1JyyG8smHdYi2R1gPqSSCALD3F0L',
-      redirectUri: 'https://bomui.herokuapp.com/callback',
+      redirectUri: this.isLocal ? 'http://localhost:3000/callback' : 'https://bomui.herokuapp.com/callback',
       audience: 'https://shopelect.auth0.com/api/v2/',
       responseType: 'token'
     });

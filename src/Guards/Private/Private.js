@@ -11,6 +11,6 @@ export class Private extends Guard {
       return this.props.children;
     }
     StorageService.clear();
-    return <Redirect to='/login'/>;
+    return <Redirect to='/login' />;
   }
 }

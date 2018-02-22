@@ -7,8 +7,10 @@ import { Button } from 'reactstrap';
 import {Link} from 'react-router-dom';
 import {ApiService} from './services/api.service';
 import {StorageService} from './services/storage.service';
+import { AuthService } from './services/auth.service';
 
 class App extends Component {
+	
 	constructor(props) {
 		super(props);
 		this.dropZone = null;
@@ -19,20 +21,14 @@ class App extends Component {
 		this.boms = [];
 	}
 	componentDidMount() {
-		console.log(this.getContactId())
 		ApiService.get(`/customer/${this.getContactId()}/bom`).then(res => {
-            console.log(res)
             this.setState({ bomList: res.estimates });
-			console.log(this.state.bomList)
-			// this.test();
-        })
+        });
 
 		ApiService.get(`/contacts/${this.getContactId()}`).then(res1 => {
             const prefVendors = res1.contact.cf_preferred_vendors;
             prefVendors ? StorageService.setItem('prefVendors', prefVendors) : ''
-        })
-
-
+        });
 	}
 
 	getContactId() {
@@ -44,12 +40,11 @@ class App extends Component {
 			let j = i;
 			let _href = '/main/' + j.toString();
 			this.boms.push(
-				<ul>
-					<li class="first-in-row">
+				<ul key={j}>
+					<li className="first-in-row">
 						<Link to = {`/bom/${this.state.bomList[i].estimate_id}`}>
 							<h3>{this.state.bomList[i].cf_title}</h3>
-
-							<div class="last-updated">Last updated: {this.state.bomList[i].last_modified_time}</div>
+							<div className="last-updated">Last updated: {this.state.bomList[i].last_modified_time}</div>
 						</Link>
 					</li>
 				</ul>
@@ -150,18 +145,28 @@ class App extends Component {
 				<div className="inner">
 					<hr />
 				</div>
-				<div className="inner">
-					<h2>Saved BOMs</h2>
-					<div class="saved-boms">
-						<div>
-							<div class="saved-boms-list">{this.boms}</div>
-						</div>
-					</div>
-					<div className="sign-in">
-						<a href="/auth/login?continue_to=https://octopart.com/bom-tool&amp;sig=560745">Sign in</a> to
-						view your Saved BOMs.
-					</div>
-				</div>
+				{(() => {
+					if (AuthService.isAuthenticated()) {
+						return (
+							<div className="inner">
+								<h2>Saved BOMs</h2>
+								<div className="saved-boms">
+									<div>
+										<div className="saved-boms-list">{this.boms}</div>
+									</div>
+								</div>
+							</div>
+						)
+					} else {
+						return (
+							<div className="inner">
+								<div className="sign-in">
+									<Link to="/login">Sign in</Link> to view your Saved BOMs.
+								</div>
+							</div>
+						)
+					}
+				})()}
 			</section>
 		);
 	}
