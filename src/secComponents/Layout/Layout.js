@@ -8,10 +8,12 @@ export class Layout extends Component {
 
     render() {
 
-        return (<div className="layout">
-            <Container fluid="true">
-                    <Header/>
-            </Container>
-        </div>)
+        return <Redirect to="/login"></Redirect>
+
+        // return (<div className="layout">
+        //     <Container fluid="true">
+        //             <Header/>
+        //     </Container>
+        // </div>)
     }
 }

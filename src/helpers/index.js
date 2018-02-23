@@ -6,6 +6,16 @@ export const env = ($key, $default = "") => process.env[$key] || $default;
 
 export const getProp = ($obj, $key, $default = '-') => $obj ? $obj[$key] || $default : $default;
 
+export const isLocal = Boolean(
+    window.location.hostname === 'localhost' ||
+    // [::1] is the IPv6 localhost address.
+    window.location.hostname === '[::1]' ||
+    // 127.0.0.1/8 is considered localhost for IPv4.
+    window.location.hostname.match(
+        /^127(?:\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$/
+    )
+);
+
 export const toCSV = (arr, header) => {
     const ser = serializeArray(arr);
     const result = ser.map(element => element.map(el => `"${el.toString()}"`).join(','));

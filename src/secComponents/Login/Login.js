@@ -88,7 +88,7 @@ export class Login extends Component {
             <div className="login">
                 <Container fluid={true} className="loginCont">
                     <Row className="justify-content-center">
-                        <Col md="4" lg="3" className="stepCont">
+                        <Col md="4" className="stepCont" style={{"min-width": "450px"}}>
                             <div className="loginStep">
                                 <div className="clearfix loginHead">
                                     <Col md="6">
