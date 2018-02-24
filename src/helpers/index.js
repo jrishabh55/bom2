@@ -1,4 +1,5 @@
 import history from './history';
+import * as $ from 'jquery';
 
 export { history as history};
 
@@ -11,12 +12,10 @@ export const isLocal = Boolean(
     // [::1] is the IPv6 localhost address.
     window.location.hostname === '[::1]' ||
     // 127.0.0.1/8 is considered localhost for IPv4.
-    window.location.hostname.match(
-        /^127(?:\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$/
-    )
+    window.location.hostname.match( /^127(?:\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$/ )
 );
 
-export const toCSV = (arr, header) => {
+export const toCSV = (arr, header = []) => {
     const ser = serializeArray(arr);
     const result = ser.map(element => element.map(el => `"${el.toString()}"`).join(','));
     if (header) {
@@ -54,3 +53,28 @@ export const download = (filename, data) => {
         document.body.removeChild(elem);
     }
 }
+
+export const parseCsv = function (data) {
+    if (typeof data !== 'string') {
+        return false;
+    }
+
+    return data.split('\n').map(item => item.split(','));
+}
+
+
+export const parseCsvFile = async (file) => {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsText(file);
+        reader.onload = function (event) {
+           const csv = event.target.result;
+           const data = $.csv.toArrays(csv);
+           resolve(data);
+        }
+
+        reader.onerror = function () {
+           reject('Unable to read ' + file.fileName);
+        };
+    });
+ }

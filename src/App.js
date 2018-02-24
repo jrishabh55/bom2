@@ -1,13 +1,13 @@
 import React, { Component } from 'react';
 import FontAwesome from 'react-fontawesome';
 import Dropzone from 'react-dropzone';
-import * as XLSX from 'xlsx';
 import * as $ from 'jquery';
 import { Button } from 'reactstrap';
 import {Link} from 'react-router-dom';
 import {ApiService} from './services/api.service';
 import {StorageService} from './services/storage.service';
 import { AuthService } from './services/auth.service';
+import { parseCsvFile } from './helpers';
 
 class App extends Component {
 
@@ -36,29 +36,15 @@ class App extends Component {
         return localStorage.getItem('contactId');
     }
 
-	loadFile(files) {
-		const f = files[0];
-		var name = f.name;
-		const reader = new FileReader();
-		reader.onload = (evt) => {
-			/* Parse data */
-			const bstr = evt.target.result;
-			const wb = XLSX.read(bstr, { type: 'binary' });
-			/* Get first worksheet */
-			const wsname = wb.SheetNames[0];
-			const ws = wb.Sheets[wsname];
-			/* Convert array of arrays */
-			const data = XLSX.utils.sheet_to_json(ws, { header: 1 });
-			/* Update state */
-			console.log(data);
-			this.props.history.push({
-				pathname: '/bom/new',
-				state: {
-					data: data
-				}
-			});
-		};
-		reader.readAsBinaryString(f);
+	async loadFile(files) {
+		const { history }  = this.props;
+		const data = await parseCsvFile(files[0]);
+		history.push({
+			pathname: '/bom/new',
+			state: {
+				dd: data
+			}
+		});
 	}
 
 	render() {
@@ -115,7 +101,7 @@ class App extends Component {
 									</div>
 									<div className="or-select-files">
 										<div>
-											<form method="post" action="/bom-tool/upload" encType="multipart/form-data">
+											<form method="post" action="" encType="multipart/form-data">
 												<input
 													name="_authentication_token"
 													type="hidden"
@@ -133,7 +119,7 @@ class App extends Component {
 													<span>or select a file...</span>
 												</label>
 											</form>
-											<div className="accepts">(.xls, .xlsx, .csv, .txt, Eagle 6 .sch)</div>
+											<div className="accepts">(.csv)</div>
 										</div>
 									</div>
 									<div className="upload-bom-button">

@@ -7,7 +7,7 @@ import { BomTable } from './secComponents/BomTable/BomTable';
 import { BomList } from './secComponents/BomList/BomList';
 import { VendorTable } from './secComponents/VendorTable/VendorTable';
 import { CallBack } from './secComponents/CallBack/CallBack';
-import { Private } from './Guards/Private/Private.js';
+import { Private } from './Guards/Private';
 import Intro from './App';
 import Main from './App_main';
 

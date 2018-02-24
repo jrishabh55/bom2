@@ -568,7 +568,7 @@ return (
                 </Row>
                 <Row>
                     <Col>
-                        <Table bordered="true">
+                        <Table bordered={true}>
                             <thead>
                                 <tr className="tableCaption">
                                     <td colSpan="10" className="clr-form-2 mainCaption">ShopElect Webiste</td>
