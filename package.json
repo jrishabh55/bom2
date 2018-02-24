@@ -4,11 +4,11 @@
     "private": true,
     "homepage": "http://bom.shopelect.com",
     "dependencies": {
-        "auth0-js": "^9.2.2",
+        "auth0-js": "^9.3.0",
         "bootstrap": "^4.0.0",
         "fix-table-header": "^1.0.3",
         "jquery": "^3.3.1",
-        "lodash": "^4.17.4",
+        "lodash": "^4.17.5",
         "material-ui": "^0.20.0",
         "pdfmake": "^0.1.35",
         "react": "^16.2.0",
@@ -16,17 +16,13 @@
         "react-dom": "^16.2.0",
         "react-dropzone": "^4.2.8",
         "react-fontawesome": "^1.6.1",
-        "react-redux": "^5.0.6",
         "react-router": "^4.2.0",
         "react-router-dom": "^4.2.2",
         "react-scripts": "1.0.17",
         "reactstrap": "^5.0.0-alpha.4",
-        "redux": "^3.7.2",
         "semantic-ui-react": "^0.78.2",
-        "tableexport": "^5.0.0",
         "toastr": "^2.1.4",
-        "typeface-roboto": "0.0.54",
-        "xlsx": "^0.11.12"
+        "typeface-roboto": "0.0.54"
     },
     "scripts": {
         "start": "react-scripts start",
