@@ -33,7 +33,7 @@ class App extends Component {
 	}
 
 	getContactId() {
-        return localStorage.getItem('contactId');
+        return StorageService.getItem('contactId');
     }
 
 	async loadFile(files) {
