@@ -2,13 +2,13 @@ import React, { Component } from 'react';
 
 export class Guard extends Component {
 
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
     this.path = '/login';
   }
-  
+
   componentWillMount() {
-    if (this.canActive) {
+    if ( this.canActive ) {
       this.canActive();
     }
   }

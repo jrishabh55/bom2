@@ -8,9 +8,9 @@ import { history } from '../helpers';
 export class Private extends Guard {
 
   canActive() {
-    if (!AuthService.isAuthenticated()) {
+    if ( !AuthService.isAuthenticated() ) {
       StorageService.clear();
-        return history.push(this.path);;
+      return history.push( this.path );;
     }
   }
 }
