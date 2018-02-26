@@ -20,10 +20,14 @@
     top: 0; */
     z-index: 2;
 }
+.vendorTable {
+    position: relative;
+}
 
 #clone-head{
     position: fixed;
-    top: 0;
+    top:0;
+    /* to */
     z-index: 2;
 }
 
