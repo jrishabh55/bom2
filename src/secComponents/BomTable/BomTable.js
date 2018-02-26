@@ -159,6 +159,11 @@ export class BomTable extends Component {
     this.setState( { vendorData: temp } );
   }
 
+  saveBOM() {
+      this.updateBomTitle();
+
+  }
+
   getContactId() {
     return AuthService.user().id;
   }
@@ -638,7 +643,7 @@ export class BomTable extends Component {
                   <th className="sNo">S No</th>
                   <th className="sort" onClick={this.sorting.bind( this, '[item_custom_fields][0].value' )}>Manufacturer</th>
                   <th className="sort" onClick={this.sorting.bind( this, '[item_custom_fields][1].value' )}>Manufacturer Part No</th>
-                  <th className="lg-width">Description</th>
+                  <th>Description</th>
                   <th className="sort" onClick={this.sorting.bind( this, 'quantity' )}>Qty</th>
                   <th>GST %</th>
                   <th>HSN</th>
@@ -672,17 +677,12 @@ export class BomTable extends Component {
                         <td>{$index + 1}</td>
                         <td>{$data.manufacturer || getProp( $data[ 'item_custom_fields' ][0], 'value' )}</td>
                         <td>{$data.company_sku || getProp( $data[ 'item_custom_fields' ][1], 'value' )}</td>
-                        <td>
+                        <td className="clip-content">
                           <span onClick={this.descModal.bind( this, $data.description || '-', $index )} data-toggle="modal" data-target="#bomDescModal">{
                               $data.description
-                                ? (
-                                  $data.description.length > 50
-                                  ? $data.description.substr( 0, 50 ) + '...'
-                                  : $data.description)
-                                : '-'
-                            }</span>
+                                }</span>
                         </td>
-                        <td><Input type="number" name={`quantity-${ $index }`} value={$data.quantity} onChange={() => {
+                        <td className="qty"><Input type="number" name={`quantity-${ $index }`} value={$data.quantity} onChange={() => {
                           this.updateBomFields.call( this, 'quantity', $index );
                           this.calOrderAmount.call( this, $index );
                         }}/>

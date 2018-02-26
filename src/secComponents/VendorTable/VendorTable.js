@@ -154,8 +154,8 @@ export class VendorTable extends Component {
         for( let i = 0; i < col.length; i++ ) {
             this.headWidth.push(col[i].offsetWidth);
         }
-        let e = $('#clone-head > thead .mainTableHead th');
-        e[0].css('width', '200px')
+        // let e = $('#clone-head > thead .mainTableHead th'[]);
+        // e[0].css('width', '200px')
         console.log(this.headWidth)
         this.bomIndex += this.bomsToFetch;
     }

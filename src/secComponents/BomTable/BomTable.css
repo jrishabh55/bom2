@@ -205,7 +205,7 @@ table tbody {
 
 table tbody tr > td {
     border: 1px solid #DFDFDF;
-    padding: 12px 7px 15px !important;
+    padding: 5px !important;
     position: relative;
 }
 
@@ -245,7 +245,7 @@ table .lg-width {
     min-width: 130px;
 }
 table .md-width {
-    min-width: 90px;
+    max-width: 90px;
 }
 
 .attachment svg {
@@ -271,5 +271,5 @@ table .cancel {
     min-width: 40px !important;
 }
 .qty{
-    width: 40px !important;
+    width: 50px !important;
 }
