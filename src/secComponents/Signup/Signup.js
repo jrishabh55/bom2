@@ -136,13 +136,13 @@ export class SignUp extends Component {
         let data = this.state.vendorData;
         const value = event.target.value;
         const key = event.target.getAttribute('name');
-        if(key == `vendorName-${$index}`){
+        if(key === `vendorName-${$index}`){
             data[$index].name = value;
             this.setState({
                 vendorData: data
             }, () => console.log(this.state.vendorData));
         }
-        else if(key == `vendorEmail-${$index}`){
+        else if(key === `vendorEmail-${$index}`){
             data[$index].email = value;
             this.setState({
                 vendorData: data
@@ -372,66 +372,66 @@ export class SignUp extends Component {
 
     register(e) {
         let vendorId = [];
-        this.state.vendorData.map(($vendor, $index) => {
-            let data = {
+        const proms =  this.state.vendorData.map(($vendor, $index) => {
+            const data = {
                 company_name: $vendor.name,
                 contact_name: $vendor.name,
                 contact_type: "vendor",
                 contact_persons: [ { email: $vendor.email } ]
-            }
-            ApiService.post('/contacts', data).then(res => {
+            };
+            return ApiService.post('/contacts', data).then(res => {
 
                 if(res.code == 3062) {
                     toastr.error('Vendor Already Exist')
                 }
                 if(res.code == 0) {
                     vendorId.push(res.contact.contact_id);
-                    console.log(vendorId)
                     if(vendorId.length == this.state.vendorData.length) {
                         vendorId = vendorId.toString();
-                        console.log(vendorId)
-                        console.log(this.validateScreen())
                         if (!this.validateScreen()) {
                             return false;
                         }
-
-                        AuthService.register({
-                            contact_name: this.getFormField('name'),
-                            company_name: this.getFormField('companyName'),
-                            contact_persons: [
-                                {
-                                    first_name: this.getFormField('name'),
-                                    email: this.getFormField('email'),
-                                    phone: this.getFormField('phone'),
-                                    is_primary_contact: true
-                                }
-                            ],
-                            custom_fields: [
-                                {
-                                    index: 6,
-                                    value: this.getFormField('typeOfCompany')
-                                }, {
-                                    index: 7,
-                                    value: this.getFormField('noOfEmployes')
-                                }, {
-                                    index: 8,
-                                    value: this.getFormField('city')
-                                }, {
-                                    index: 9,
-                                    value: this.getFormField('purpose')
-                                }, {
-                                    index: 10,
-                                    value: this.getFormField('orderDate')
-                                }, {
-                                    index: 12,
-                                    value: vendorId
-                                }
-                            ]
-                        }).then(response => toastr.success(response.message)).catch(error => toastr.error(error.message))
                     }
                 }
-            })
-        })
+            });
+            proms.push( prom );
+        });
 
+        Promise.all( proms ).then( () => {
+          AuthService.register({
+            contact_name: this.getFormField('name'),
+            company_name: this.getFormField('companyName'),
+            contact_persons: [
+              {
+                first_name: this.getFormField('name'),
+                email: this.getFormField('email'),
+                phone: this.getFormField('phone'),
+                is_primary_contact: true
+              }
+            ],
+            custom_fields: [
+              {
+                index: 6,
+                value: this.getFormField('typeOfCompany')
+              }, {
+                index: 7,
+                value: this.getFormField('noOfEmployes')
+              }, {
+                index: 8,
+                value: this.getFormField('city')
+              }, {
+                index: 9,
+                value: this.getFormField('purpose')
+              }, {
+                index: 10,
+                value: this.getFormField('orderDate')
+              }, {
+                index: 12,
+                value: vendorId
+              }
+            ]
+          }).then(response => toastr.success(response.message))
+          .catch(error => toastr.error(error.message));
+        } );
     }
 }
