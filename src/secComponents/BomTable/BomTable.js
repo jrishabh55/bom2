@@ -2,13 +2,14 @@ import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import * as $ from 'jquery';
 import * as _ from 'lodash';
+import toastr from 'toastr';
 import { Container, Row, Col, FormGroup, Label, Input, Table } from 'reactstrap';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
+import { BomService } from '../../services/bom.service';
 import { StorageService } from '../../services/storage.service';
 import { BomContract } from '../../services/bom.contract';
 import { currencyService } from '../../services/currency.service';
-import toastr from 'toastr';
 import { getProp, toCSV, download } from '../../helpers';
 
 import '../main.css';
@@ -35,6 +36,7 @@ export class BomTable extends Component {
     this.supplierDataBody = '';
     this.bomId = this.props.match.params.bomId;
     this.isNew = this.bomId === 'new';
+    this.isImport = this.bomId === 'import';
     let comment = [];
     let history = [];
 
@@ -87,8 +89,38 @@ export class BomTable extends Component {
     } );
   }
 
+  componentWillMount() {
+    if ( this.isImport ) {
+      const bom = BomService.last();
+      if ( !bom ) {
+        this.props.history.push('/bom');
+        return;
+      }
+      const title = bom.title;
+      const listItems = bom.items.map( ( item, $index ) => ( {
+        "name": item.Name || item[ "Customer Manufacturer Part No" ],
+        "description": item.description,
+        "item_order": $index,
+        "bcy_rate": item.Price,
+        "rate": item.Price,
+        "quantity": item.Quantity,
+        "item_total": ( ( item.Quantity || 1 ) * ( item.Price ) ),
+        "item_custom_fields": [
+          {
+            "label": "Customer Manufacturer",
+            "value": item["Customer Manufacturer"]
+          }, {
+            "label": "Customer Manufacturer Part No",
+            "value": item["Customer Manufacturer Part No"]
+          }
+        ]
+      } ) );
+      this.setState( { bom_title: title, currData: listItems} );
+    }
+  }
+
   componentDidMount() {
-    if ( !this.isNew ) {
+    if ( !this.isNew && !this.isImport ) {
       ApiService.get( `/contacts/${ this.getContactId() }` ).then( res => {
         this.userDetails = res.contact;
       } );
@@ -267,41 +299,29 @@ export class BomTable extends Component {
     const data = this.state.searchProd[ $index ];
     data._source.quantity = 1;
     currTableData.push( data );
-    this.setState( {
-      currData: currTableData
-    }, () => {
+    this.setState( { currData: currTableData }, () => {
       this.calOrderAmount( this.state.currData.length - 1 );
     } );
     this.fetchPartDetails( '' );
   }
 
   edit() {
-    this.setState( {
-      editable: !this.state.editable
-    } );
+    this.setState( { editable: !this.state.editable } );
   }
 
   toggleDetailSupplier() {
-    this.setState( {
-      supp: !this.state.supp
-    } );
+    this.setState( { supp: !this.state.supp } );
   }
 
   toggleFooter( index, expand, $id ) {
-    this.setState( {
-      hiddenFooter: index === this.state.hiddenFooter
-        ? -1
-        : index
-    } );
+    this.setState( { hiddenFooter: index === this.state.hiddenFooter ? -1 : index } );
     if ( expand === true ) {
       this.getComments( $id, index );
     }
   }
 
   sorting( $colIndex ) {
-    const $orderPar = this.orderAsc
-      ? 'asc'
-      : 'desc';
+    const $orderPar = this.orderAsc ? 'asc' : 'desc';
     const currTableData = _.orderBy( this.state.currData, $colIndex, $orderPar );
     this.setState( { currData: currTableData } );
     this.orderAsc = !this.orderAsc;
@@ -332,12 +352,8 @@ export class BomTable extends Component {
     newData[ $index ][ 'quantity' ] = value;
     this.setState( { currData: newData } )
     this.state.currData.map( ( $data, $i ) => {
-      console.log( $data )
-      amount = amount + ( ( $data.quantity || 0 ) * ( $data.rate || (
-        $data._source
-        ? $data._source.msrp
-        : 0) || 0 ) );
-      this.setState( { orderAmount: amount } )
+      amount = amount + ( ( $data.quantity || 0 ) * ( $data.rate || ( $data._source ? $data._source.msrp : 0) || 0 ) );
+      this.setState( { orderAmount: amount } );
     } )
   }
 
@@ -474,9 +490,11 @@ export class BomTable extends Component {
     const title = this.state.bom_title.trim();
     const data = this.state.currData.map( ( $data, $index ) => {
       $data = $data._source || $data;
+      console.log($data)
       return ( {
-        "Customer Manufacturer Part No": $data.company_sku || getProp( $data.item_custom_fields[0], 'value' ),
-        "Customer Manufacturer": $data.manufacturer || getProp( $data.item_custom_fields[1], 'value' ),
+        "Name": $data.name,
+        "Customer Manufacturer": $data.manufacturer || getProp( $data.item_custom_fields[0], 'value' ),
+        "Customer Manufacturer Part No": $data.company_sku || getProp( $data.item_custom_fields[1], 'value' ),
         "description": $data.description,
         "Price": $data.msrp || $data.rate,
         "Quantity": $data.quantity
@@ -634,11 +652,7 @@ export class BomTable extends Component {
                 </tr>
                 <tr>
                   <th className="clr-primary" onClick={this.edit.bind( this )}>
-                    <a href="javascript:void()">{
-                        this.state.editable
-                          ? 'Save'
-                          : 'Edit'
-                      }</a>
+                    <a href="javascript:void()">{ this.state.editable ? 'Save' : 'Edit' }</a>
                   </th>
                   <th className="sNo">S No</th>
                   <th className="sort" onClick={this.sorting.bind( this, '[item_custom_fields][0].value' )}>Manufacturer</th>
@@ -649,11 +663,7 @@ export class BomTable extends Component {
                   <th>HSN</th>
                   <th className="sort" onClick={this.sorting.bind( this, 'rate' )}>Price</th>
                   <th>Attachment</th>
-                  {
-                    this.state.vendorData.map( ( $vData, $i ) => {
-                      return this.supplierDataHead;
-                    } )
-                  }
+                  { this.state.vendorData.map( ( $vData, $i ) =>  this.supplierDataHead ) }
                   <th>Customer Notes</th>
                   <th>Bid Status</th>
                 </tr>
@@ -669,10 +679,9 @@ export class BomTable extends Component {
                             <i className="fas fa-times cancel"></i>
                           </span>
                           {/* <label className="checkContainer">
-                                                        <Input type="checkbox" name="signedIn"/>
-                                                        <span className="checkmark"></span>
-                                                    </label> */
-                          }
+                              <Input type="checkbox" name="signedIn"/>
+                              <span className="checkmark"></span>
+                          </label> */}
                         </td>
                         <td>{$index + 1}</td>
                         <td>{$data.manufacturer || getProp( $data[ 'item_custom_fields' ][0], 'value' )}</td>
@@ -696,11 +705,7 @@ export class BomTable extends Component {
                           <i className="fas fa-plus-circle"></i>
                           <i className="far fa-file-pdf"></i>
                         </td>
-                        {
-                          this.state.vendorData.map( ( $vData, $i ) => {
-                            return this.lowestQuoteSupplier( $data, $index, thisSupplier, $i );
-                          } )
-                        }
+                        { this.state.vendorData.map( ( $vData, $i ) =>  this.lowestQuoteSupplier( $data, $index, thisSupplier, $i ) ) }
                         <td>{$data.custNotes}</td>
                         <td>{$data.bidSts}</td>
                       </tr> ) ];
@@ -746,12 +751,12 @@ export class BomTable extends Component {
                                       <span>
                                         <ul className="commentLog lg-space">
                                           {/*
-                                                                                    <li>Quantity changes to 10 done by Customer - 18th Jan 2018 , 12.30pm</li>
-                                                                                    <li>Quantity changes to 10 done by Customer - 18th Jan 2018 , 12.30pm</li>
-                                                                                    <li>Quantity changes to 10 done by Customer - 18th Jan 2018 , 12.30pm</li>
-                                                                                    <li>Quantity changes to 10 done by Customer - 18th Jan 2018 , 12.30pm</li>
-                                                                                */
-                                          }</ul>
+                                          <li>Quantity changes to 10 done by Customer - 18th Jan 2018 , 12.30pm</li>
+                                          <li>Quantity changes to 10 done by Customer - 18th Jan 2018 , 12.30pm</li>
+                                          <li>Quantity changes to 10 done by Customer - 18th Jan 2018 , 12.30pm</li>
+                                          <li>Quantity changes to 10 done by Customer - 18th Jan 2018 , 12.30pm</li>
+                                          */}
+                                        </ul>
                                       </span>
                                       <span>
                                         <a onClick={this.toggleFooter.bind( this, $index )} className="viewActivityLog" href=";" role="button" data-toggle="collapse" data-target={`#collapse${ $index }`} aria-expanded="true" aria-controls={`collapse${ $index }`}>

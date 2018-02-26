@@ -1,9 +1,7 @@
 import history from './history';
 import * as $ from 'jquery';
 
-export {
-  history as history
-};
+export { history as history };
 
 export const env = ( $key, $default = "" ) => process.env[ $key ] || $default;
 

@@ -12,7 +12,7 @@ import Intro from './App';
 import Main from './App_main';
 
 export const Routes = () => (
-	<Router>
+	<Router basename={process.env.PUBLIC_URL}>
 		<Switch>
 			<Route exact path="/" component={ Layout } />
 			<Route exact path="/callback" component={ CallBack } />
