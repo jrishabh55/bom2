@@ -6,6 +6,7 @@ import bootstrap from 'bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './secComponents/main.css';
 
+
 import { Routes } from './routes';
 
 

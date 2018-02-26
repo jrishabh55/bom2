@@ -9,6 +9,7 @@ import toastr from 'toastr';
 
 import '../main.css';
 import './vendorTable.css';
+import './ScrollableTablePlugin_1.0_min.js';
 
 export class VendorTable extends Component {
 
@@ -18,7 +19,6 @@ export class VendorTable extends Component {
         super(props);
         this.vendorId = this.props.match.params.vendorId;
         this.currTableData = [];
-        // this.currTableData = _.orderBy(this.tableData, 'sNo', 'asc');
         this.allBom;
         this.bomIndex = 0;
         this.bomsToFetch = 10;
@@ -29,9 +29,8 @@ export class VendorTable extends Component {
 
         this.state = {
             currData: [],
-            currDataDetails: [],
             showFooter: true,
-            editable: false,
+            editable: true,
             modalDescData: '',
             bomList: [],
             manuDetails: [],
@@ -39,20 +38,30 @@ export class VendorTable extends Component {
     }
 
     componentDidMount() {
+        // $(window).scroll(function(){
+        //      if ($(this).scrollTop() > 197) {
+        //          $('#vendorTable thead').addClass('fixed');
+        //      } else {
+        //          $('#vendorTable thead').removeClass('fixed');
+        //      }
+        //  });
+
         ApiService.get(`/bom`).then(res => {
             this.setState({ bomList: res.estimates }, this.fetchBom.bind(this));
         });
         $(window).on('scroll', () => {
-            var scrollHeight = $(document).height();
-            var scrollPosition = $(window).height() + $(window).scrollTop();
-            if ((scrollHeight - scrollPosition) / scrollHeight === 0) {
-                if (this.state.bomList > 0 && this.state.bomList.length <= this.bomIndex) {
-                    this.fetchBom();
-                }
-            }
-        })
-    };
+            if ($(window).scrollTop() >= $(document).height() - $(window).height() - 10) {
+                  // this.fetchBom();
 
+               }
+        })
+
+        $(window).scroll(function() {
+            if ($(this).scrollTop() == 0) {
+
+            }
+        });
+    }
 
     addComment($event, index) {
         $event.preventDefault();
@@ -65,50 +74,52 @@ export class VendorTable extends Component {
         });
     }
 
-    getComments($id, $i, index) {
+    getComments($id, index) {
         ApiService.fetchComments({ bom_id: this.bomId, item_id: $id })
             .then(res => {
                 if (!res.found) {
                     return;
                 }
-                
                 const comments = res._source.comments.map(comment => {
                     const date = new Date(comment.timestamp);
                     const timestamp = date.toDateString() + ", " + date.toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true });
                     return `${timestamp} ${comment.text}`;
                 });
-
                 const push = this.state.currData;
-                push[$i][index].comments = comments;
-
+                push[index].comments = comments;
                 this.setState({ currData: push });
             });
     }
 
-    updateBomFields($field, $i, $index) {
-        let value = $(`[name=${$field}-${$i}-${$index}]`)[0].value;
+    updateBomFields($field, $index) {
+        let value = $(`[name=${$field}-${$index}]`)[0].value;
         let newData = this.state.currData;
         if($field == 'manuName'){
-            newData[$i][$index]['item_custom_fields'][0] ? newData[$i][$index]['item_custom_fields'][0].value_formatted = value : '';
+            newData[$index]['item_custom_fields'][0] ? newData[$index]['item_custom_fields'][0].value_formatted = value : '';
         }
         else if($field == 'manuPart'){
-            newData[$i][$index]['item_custom_fields'][1] ? newData[$i][$index]['item_custom_fields'][1].value_formatted = value : '';
+            newData[$index]['item_custom_fields'][1] ? newData[$index]['item_custom_fields'][1].value_formatted = value : '';
         }
         else {
-            newData[$i][$index][$field] = value;
+            newData[$index][$field] = value;
         }
         this.setState({currData: newData})
     }
 
     fetchBom() {
+        const a = [];
         for(let i = (this.bomIndex); i < (this.bomIndex + this.bomsToFetch); i++) {
             const url = `/customer/${VendorContract.getCustomerId}/bom/${this.state.bomList[i][`estimate_id`]}`;
             let data = this.state.currData;
-            let dataDetails = this.state.currDataDetails;
             ApiService.get(url).then(res => {
-                data.push(res.estimate.line_items.map(item => Object.assign(item, {comments: []})));
-                dataDetails.push(res.estimate);
-                this.setState({currData: data, currDataDetails: dataDetails});
+                console.log(res.estimate.line_items)
+                res.estimate.line_items.map(($dat) => {
+                    const est = Object.assign($dat, {comments: []}, {estimate: res.estimate});
+                    delete est.line_items;
+                    a.push(est)
+                })
+                console.log(a)
+                this.setState({currData: a});
             });
         }
         this.bomIndex += this.bomsToFetch;
@@ -118,21 +129,22 @@ export class VendorTable extends Component {
         this.setState({editable: !this.state.editable}, () => {})
     }
 
-    toggleFooter(index, expand = false, $id, $i, $index) {
+    toggleFooter(index, expand = false, $id, $index) {
         this.setState({
             showFooter: !this.state.showFooter
         }, () => {
             if (expand) {
-                this.getComments($id, $i, $index);
+                this.getComments($id, $index);
             }
         });
     }
 
     sorting($colIndex) {
-
         let $orderPar = this.orderAsc ? 'asc' : 'desc';
-        this.currTableData = _.orderBy(this.state.currData, $colIndex, $orderPar);
-        this.setState({currData: this.currTableData});
+        let currTableData = this.state.currData;
+        console.log(this.state.currData)
+        currTableData = _.orderBy(currTableData, $colIndex, $orderPar);
+        this.setState({currData: currTableData}, () => console.log(this.state.currData));
         this.orderAsc = !this.orderAsc;
     }
 
@@ -149,19 +161,19 @@ export class VendorTable extends Component {
         return data;
     }
 
-    makeQuote() {
-        this.state.currData.map(($data2, $i) => {
-            $data2.map(($data, $index) => {
+    // makeQuote() {
+    //     this.state.currData['data'].map(($data2, $i) => {
+    //         $data2.map(($data, $index) => {
+    //
+    //             const url = `/vendor/${StorageService.getItem('contactId')}/bom/${this.state.currData['details'].estimate_id}/quote/${$data.line_item_id}`;
+    //             const data =  this.quotedData($i, $index);
+    //             ApiService.post(url, data);
+    //         });
+    //     });
+    // }
 
-                const url = `/vendor/${StorageService.getItem('contactId')}/bom/${this.state.currDataDetails.estimate_id}/quote/${$data.line_item_id}`;
-                const data =  this.quotedData($i, $index);
-                ApiService.post(url, data);
-            });
-        });
-    }
-
-    saveOrder($data, $data2, $index, $i) {
-        let url = `/vendor/${StorageService.getItem('contactId')}/bom/${this.state.currDataDetails[$i].estimate_id}/quote/${$data.line_item_id}`;
+    saveOrder($data, $index) {
+        let url = `/vendor/${StorageService.getItem('contactId')}/bom/${$data.estimate.estimate_id}/quote/${$data.line_item_id}`;
         let data = {
                 list_price: $data.item_total || '',
                 discount: $data.discount || '',
@@ -179,7 +191,7 @@ export class VendorTable extends Component {
         this.setState({modalDescData: $data});
     }
 
-    manuDetails($data, $i) {
+    manuDetails($data) {
         ApiService.get(`/contacts/${$data.customer_id}`).then(res => {
             this.setState({manuDetails: res.contact});
         });
@@ -257,23 +269,23 @@ export class VendorTable extends Component {
                 <Row>
                     <Col>
                     <Table id="vendorTable" bordered>
-                            <thead>
+                            <thead id="orHead">
                                 <tr className="tableCaption">
                                 <td colSpan="9">Customer details</td>
                                 <td colSpan="8">Quotation details</td>
                                 <td colSpan="2">Shopelect Commission</td>
                                 <td colSpan="4">Customer Custom Columns</td>
                                 </tr>
-                                <tr>
+                                <tr className="mainTableHead">
                                 <th className="clr-primary" onClick={this.edit.bind(this)}><a href="javascript:void()">{this.state.editable ? 'Save' : 'Edit'}</a></th>
                                 <th>Call Customer</th>
                                 <th className="lg-width">Description</th>
-                                <th className="sort lg-width" onClick={this.sorting.bind(this, 'estimate_id')}>Customer BOM NO AND DATE</th>
-                                <th className="lg-width sort" onClick={this.sorting.bind(this, 'customer_name')}>Customer Name</th>
-                                <th className="sort" onClick={this.sorting.bind(this, 'manu')}>Manufacturer</th>
-                                <th className="sort" onClick={this.sorting.bind(this, 'manuPartNo')}>Manufacturer Part No</th>
+                                <th className="sort lg-width" onClick={this.sorting.bind(this, '["estimate"].estimate_id')}>Customer BOM NO AND DATE</th>
+                                <th className="lg-width sort" onClick={this.sorting.bind(this, '["estimate"].customer_name')}>Customer Name</th>
+                                <th className="sort" onClick={this.sorting.bind(this, '["item_custom_fields"][0].value')}>Manufacturer</th>
+                                <th className="sort" onClick={this.sorting.bind(this, '["item_custom_fields"][1].value')}>Manufacturer Part No</th>
                                 <th className="sort lg-width" onClick={this.sorting.bind(this, 'product_type')}>Item Group (Sub Brand)</th>
-                                <th className="sort" onClick={this.sorting.bind(this, 'qty')}>Qty</th>
+                                <th className="sort" onClick={this.sorting.bind(this, 'quantity')}>Qty</th>
                                 <th>Current Stock</th>
                                 <th>GST%</th>
                                 <th>HSN</th>
@@ -290,40 +302,41 @@ export class VendorTable extends Component {
                                 <th>Place Bid</th>
                                 </tr>
                             </thead>
+                            {/*<div id="clone-head"></div>*/}
                             <tbody>
+                            {console.log(this.state.currData)}
                             {
-                                this.state.currData.map(($data2, $i) => {
-                                    return $data2.map(($data, $index) => {
-                                        return ([<tr className="tableRow">
+                                this.state.currData.map(($data, $index) => {
+                                    return ([<tr className="tableRow">
                                         <td onClick={() => toastr.info("The following operation is not available as of now.")}><i className="fas fa-times cancel"></i></td>
                                         <td onClick={() => toastr.info("The following operation is not available as of now.")}><i className="fas fa-phone"></i></td>
                                         <td><span onClick={this.descModal.bind(this,$data.description)} data-toggle="modal" data-target="#descModal">{$data.description.substr(0,50) + '...' || '-'}</span></td>
                                         <td>
-                                            {this.state.currDataDetails[$i].estimate_id || '-'}<br />
-                                            <span className="clr-form-2 font-xs">{this.state.currDataDetails[$i].date || '-'}</span>
-                                        </td>
-                                        <td className="custName" onClick={this.manuDetails.bind(this, this.state.currDataDetails[$i], $i)}><span className="clr-primary">{this.state.currDataDetails[$i].customer_name || '-'} <i className="float-right fas fa-info-circle"></i></span>{this.showManuDetails ? manuDetails : ''}</td>
-                                        <td><Input name={`manuName-${$i}-${$index}`} type="text" disabled={this.state.editable ? null : 'disabled'} value={$data['item_custom_fields'][0] ? $data['item_custom_fields'][0].value : ''} onChange={this.updateBomFields.bind(this, 'manuName', $i, $index)} /></td>
-                                        <td><Input name={`manuPart-${$i}-${$index}`} type="text" disabled={this.state.editable ? null : 'disabled'} value={$data['item_custom_fields'][1] ? $data['item_custom_fields'][1].value : ''} onChange={this.updateBomFields.bind(this, 'manuPart', $i, $index)} /></td>
-                                        <td><Input name={`product_type-${$i}-${$index}`} type="text" disabled={this.state.editable ? null : 'disabled'} value={$data.product_type || ''} onChange={this.updateBomFields.bind(this, 'product_type', $i, $index)} /></td>
+                                            {$data.estimate.estimate_id || '-'}<br />
+                                            <span className="clr-form-2 font-xs">{$data.estimate.estimate_id.date || '-'}</span>
+                                        </td>{console.log($data.item_custom_fields)}
+                                        <td className="custName" onClick={this.manuDetails.bind(this, $data.estimate)}><span className="clr-primary">{$data.estimate.customer_name || '-'} <i className="float-right fas fa-info-circle"></i></span>{this.showManuDetails ? manuDetails : ''}</td>
+                                        <td><Input name={`manuName-${$index}`} type="text" disabled={this.state.editable ? null : 'disabled'} value={$data['item_custom_fields'][0] ? $data['item_custom_fields'][0].value : ''} onChange={this.updateBomFields.bind(this, 'manuName', $index)} /></td>
+                                        <td><Input name={`manuPart-${$index}`} type="text" disabled={this.state.editable ? null : 'disabled'} value={$data['item_custom_fields'][1] ? $data['item_custom_fields'][1].value : ''} onChange={this.updateBomFields.bind(this, 'manuPart', $index)} /></td>
+                                        <td><Input name={`product_type-${$index}`} type="text" disabled={this.state.editable ? null : 'disabled'} value={$data.product_type || ''} onChange={this.updateBomFields.bind(this, 'product_type', $index)} /></td>
                                         <td>{$data.quantity || '-'}</td>
-                                        <td><Input name={`current_stock-${$i}-${$index}`} type="number" disabled={this.state.editable ? null : 'disabled'} value={$data.current_stock || ''} onChange={this.updateBomFields.bind(this, 'current_stock', $i, $index)} /></td>
-                                        <td><Input name={`tax_percentage-${$i}-${$index}`} type="number" disabled={this.state.editable ? null : 'disabled'} value={$data.tax_percentage || ''} onChange={this.updateBomFields.bind(this, 'tax_percentage', $i, $index)} /></td>
-                                        <td><Input name={`hsn_or_sac-${$i}-${$index}`} type="text" disabled={this.state.editable ? null : 'disabled'} value={$data.hsn_or_sac || ''} onChange={this.updateBomFields.bind(this, 'hsn_or_sac', $i, $index)} /></td>
-                                        <td><Input name={`item_total-${$i}-${$index}`} type="text" disabled={this.state.editable ? null : 'disabled'} value={$data.item_total || ''} onChange={this.updateBomFields.bind(this, 'item_total', $i, $index)} /></td>
-                                        <td><Input name={`discount-${$i}-${$index}`} type="number" disabled={this.state.editable ? null : 'disabled'} value={$data.discount || ''} onChange={this.updateBomFields.bind(this, 'discount', $i, $index)} /></td>
-                                        <td><Input name={`time_to_ship-${$i}-${$index}`} type="number" disabled={this.state.editable ? null : 'disabled'} value={$data.time_to_ship || ''} onChange={this.updateBomFields.bind(this, 'time_to_ship', $i, $index)} /></td>
-                                        <td><Input name={`delivery_city-${$i}-${$index}`} type="text" disabled={this.state.editable ? null : 'disabled'} value={$data.delivery_city || ''} onChange={this.updateBomFields.bind(this, 'delivery_city', $i, $index)} /></td>
+                                        <td><Input name={`current_stock-${$index}`} type="number" disabled={this.state.editable ? null : 'disabled'} value={$data.current_stock || ''} onChange={this.updateBomFields.bind(this, 'current_stock', $index)} /></td>
+                                        <td><Input name={`tax_percentage-${$index}`} type="number" disabled={this.state.editable ? null : 'disabled'} value={$data.tax_percentage || ''} onChange={this.updateBomFields.bind(this, 'tax_percentage', $index)} /></td>
+                                        <td><Input name={`hsn_or_sac-${$index}`} type="text" disabled={this.state.editable ? null : 'disabled'} value={$data.hsn_or_sac || ''} onChange={this.updateBomFields.bind(this, 'hsn_or_sac', $index)} /></td>
+                                        <td><Input name={`item_total-${$index}`} type="text" disabled={this.state.editable ? null : 'disabled'} value={$data.item_total || ''} onChange={this.updateBomFields.bind(this, 'item_total', $index)} /></td>
+                                        <td><Input name={`discount-${$index}`} type="number" disabled={this.state.editable ? null : 'disabled'} value={$data.discount || ''} onChange={this.updateBomFields.bind(this, 'discount', $index)} /></td>
+                                        <td><Input name={`time_to_ship-${$index}`} type="number" disabled={this.state.editable ? null : 'disabled'} value={$data.time_to_ship || ''} onChange={this.updateBomFields.bind(this, 'time_to_ship', $index)} /></td>
+                                        <td><Input name={`delivery_city-${$index}`} type="text" disabled={this.state.editable ? null : 'disabled'} value={$data.delivery_city || ''} onChange={this.updateBomFields.bind(this, 'delivery_city', $index)} /></td>
                                         <td><Input type="number" disabled={this.state.editable ? null : 'disabled'} defaultValue={'--'} /></td>
                                         <td>{'-'}</td>
                                         <td>{'-'}</td>
-                                        <td><Input name={`remarks-${$i}-${$index}`} type="text" disabled={this.state.editable ? null : 'disabled'} value={$data.remarks ||''} onChange={this.updateBomFields.bind(this, 'remarks', $i, $index)} /></td>
+                                        <td><Input name={`remarks-${$index}`} type="text" disabled={this.state.editable ? null : 'disabled'} value={$data.remarks ||''} onChange={this.updateBomFields.bind(this, 'remarks', $index)} /></td>
                                         <td className="attachment">
                                         <i className="fas fa-plus-circle"></i>
                                         <i className="far fa-file-pdf"></i>
                                         </td>
                                         <td>{'-'}</td>
-                                        <td><span onClick={this.saveOrder.bind(this,$data,$data2,$index,$i)}><i className="fas fa-check"></i></span></td>
+                                        <td><span onClick={this.saveOrder.bind(this,$data,$index)}><i className="fas fa-check"></i></span></td>
                                             </tr>,
                                                 <tr>
                                                 <td colSpan="23" className="tableFooter">
@@ -331,7 +344,7 @@ export class VendorTable extends Component {
                                                     this.state.showFooter ? (
                                                         <div>
                                                             <Col md="6">
-                                                                <a onClick={this.toggleFooter.bind(this, $index, true, $data.line_item_id, $i, $index)} className="viewActivityLog text-right" href=";" role="button" data-toggle="collapse" data-target={`#collapse-${$data.line_item_id}`} aria-expanded="true" aria-controls={`collapse-${$data.line_item_id}`}>
+                                                                <a onClick={this.toggleFooter.bind(this, $index, true, $data.line_item_id, $index)} className="viewActivityLog text-right" href=";" role="button" data-toggle="collapse" data-target={`#collapse-${$data.line_item_id}`} aria-expanded="true" aria-controls={`collapse-${$data.line_item_id}`}>
                                                                     <i className="mr-1 far fa-plus-square"></i> Add Comment to Customer
                                                                 </a>
                                                                 <span className="lastAct ml-3">Comment from Customer</span>
@@ -383,11 +396,10 @@ export class VendorTable extends Component {
                                                     </div>
                                                 </td>
                                             </tr>])
-                                    })
-
                                         })
                                 }
                             </tbody>
+
                         </Table>
                         <div className="modal fade" id="descModal">
                           <div className="modal-dialog" role="document">

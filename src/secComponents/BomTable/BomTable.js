@@ -103,6 +103,7 @@ export class BomTable extends Component {
                     let data = this.state.vendorQuotes;
                     this.calOrderAmount();
                     ApiService.get(`/customer/${this.getContactId()}/bom/${this.bomId}/vendor/lowest_quotes`).then(lowest => {
+                        console.log(lowest)
                         if( lowest.aggregations.lowest_quotes.buckets.length > 0 ) {
                             data.push(lowest);
                             this.setState({vendorQuotes: data})
@@ -186,6 +187,8 @@ export class BomTable extends Component {
     }
 
     placeOrder() {
+        let purpose = $('[name=purpose]')[0].value;
+        let timeline = $('[name=timeline]')[0].value;
         let data = {
             items: this.state.currData.map(($data, $index) => {
                 let qty = $(`[name=quantity-${$index}]`)[0].value;
@@ -209,20 +212,37 @@ export class BomTable extends Component {
                     ]
                 });
             }),
+            custom_fields: [
+                {
+                    index: 4,
+                    value:  true
+                }, {
+                    index: 5,
+                    value: purpose
+                }, {
+                    index: 6,
+                    value: timeline
+                }
+            ],
             title: this.state.bom_title
         };
+        console.log(data)
 
         ApiService.post(`/customer/${this.getContactId()}/bom`, data).then(res => {
             if (res.message === "The estimate has been created.") {
                 toastr.success(`${res.message}: ${res.estimate.estimate_id}`);
+                console.log(res)
                 this.props.history.push('/bom');
             } else {
                 toastr.error(res.message);
+                console.log(res)
             }
         });
     }
 
     updateOrder(redirect = true) {
+        let purpose = $('[name=purpose]')[0].value;
+        let timeline = $('[name=timeline]')[0].value;
         const data = {
             items: this.state.currData.map(($data, $index) => {
                 $data = $data._source || $data;
@@ -249,11 +269,22 @@ export class BomTable extends Component {
 
                 });
             }),
+            custom_fields: [
+                {
+                    index: 5,
+                    value: purpose
+                }, {
+                    index: 6,
+                    value: timeline
+                }
+            ],
             title: this.state.bom_title
         };
+        console.log(data)
 
         return ApiService.put(`/customer/${StorageService.getItem('contactId')}/bom/${this.bomId}`, data).then(res => {
             if (redirect) {
+                console.log(res)
                 this.props.history.push('/bom');
             }
             toastr.success(res.message);
@@ -379,7 +410,7 @@ export class BomTable extends Component {
                 <td>{'-'}</td>,
                 <td>{getProp(this.state.vendorData[$i][$data.line_item_id], 'discount') || '-'}</td>,
                 <td>{getProp(this.state.vendorData[$i][$data.line_item_id], 'current_stock') || '-'}</td>,
-                <td>{getProp(this.state.vendorData[$i][$data.line_item_id], '-') || '-'}</td>,
+                <td>{getProp(this.state.vendorData[$i][$data.line_item_id], 'time_to_ship') || '-'}</td>,
                 <td>{getProp(this.state.vendorData[$i][$data.line_item_id], 'delivery_city') || '-'}</td>,
                 <td>{getProp(this.state.vendorData[$i][$data.line_item_id], '-') || '-'}</td>,
             ]
@@ -499,7 +530,7 @@ return (
                             </span>
                             <FormGroup>
                                 <div className="selectCont alt-dd">
-                                    <Input id="currency" className="empty-input" type="select" name="timeline"  onChange={this.currency.bind(this)}>
+                                    <Input id="currency" className="empty-input" type="select" name="currency"  onChange={this.currency.bind(this)}>
                                         <option>INR</option>
                                         <option>USD</option>
                                         <option>GBP</option>
@@ -514,7 +545,7 @@ return (
                             <Input id="bomTitle" type="text" value={this.state.temp_bom_title} onChange={this.updatetempBomTitle.bind(this)} />
                         </span>
                     </Col>
-                    { 
+                    {
                         (() => {
                             if (this.state.bomTitleEditable) {
                                 return (<Col md="2">
@@ -522,7 +553,7 @@ return (
                                     <span onClick={this.cancelBomEdit.bind(this)} className="ml-1 font-md clr-blue"> Cancel</span>
                                 </Col>)
                             }
-                        })() 
+                        })()
                     }
                     <Col md="md" className="float-right">
                         <div className="float-right">
@@ -531,7 +562,7 @@ return (
                                 <div className="selectCont">
                                     <Input type="select" name="purpose">
                                         <option defaultValue = {this.userDetails ? this.userDetails.cf_purpose : ''}>{this.userDetails ? this.userDetails.cf_purpose : 'Select Purpose'}</option>
-                                        <option value="Budgetory">Budgetory</option>
+                                        <option value="Budgetary">Budgetary</option>
                                         <option value="To Quote Further">To Quote Further</option>
                                         <option value="To Order Immediately">To Order Immediately</option>
                                     </Input>
@@ -612,8 +643,8 @@ return (
                                                     </label> */}
                                                 </td>
                                                 <td>{$index + 1}</td>
-                                                <td>{$data.manufacturer || getProp($data['item_custom_fields'][0], 'value')}</td>
-                                                <td>{$data.company_sku || getProp($data['item_custom_fields'][1], 'value')}</td>
+                                                <td>{$data.manufacturer || getProp($data['item_custom_fields'][0], 'value') || ''}</td>
+                                                <td>{$data.company_sku || getProp($data['item_custom_fields'][1], 'value') || ''}</td>
                                                 <td><span onClick={this.descModal.bind(this,$data.description || '-', $index)} data-toggle="modal" data-target="#bomDescModal">{$data.description ? ($data.description.length>50 ? $data.description.substr(0,50) + '...' : $data.description) : '-'}</span></td>
                                                 <td><Input type="number" name={`quantity-${$index}`} value={$data.quantity} onChange={() => {
                                                             this.updateBomFields.call(this, 'quantity', $index);

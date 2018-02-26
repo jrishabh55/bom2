@@ -1,9 +1,3 @@
-#header-fixed {
-    position: fixed;
-    top: 0px; display:none;
-    background-color:white;
-}
-
 .vendorTable thead th.sort::before, thead th.supplier .sort::before {
     top: inherit !important;
     bottom: 17px !important;
@@ -18,9 +12,25 @@
     color: #9B9B9B !important;
 }
 
-.vendorTable thead {
-    position:static;
+.vendorTable table {
+}
+
+#vendorTable {
+    /* position: sticky !important;
+    top: 0; */
+    z-index: 2;
+}
+
+#clone-head{
+    position: fixed;
     top: 0;
+    z-index: 2;
+}
+
+.fixed {
+    position: fixed;
+    top: 0;
+    z-index: 2;
 }
 
 .vendorTable .nav-tabs li{
