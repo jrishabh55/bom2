@@ -49,6 +49,12 @@ export class VendorTable extends Component {
 
     componentDidMount() {
 
+        $(window).scroll( () => {
+           if($(window).scrollTop() + $(window).height() == $(document).height()) {
+               this.fetchBom();
+           }
+        });
+
 
         /* @Note: not sure e.pageX will work in IE8 */
         // (function(window){
@@ -142,7 +148,7 @@ export class VendorTable extends Component {
     }
 
     fetchBom() {
-        const a = [];
+        let a = this.state.currData;
         for(let i = (this.bomIndex); i < (this.bomIndex + this.bomsToFetch); i++) {
             const url = `/customer/${VendorContract.getCustomerId}/bom/${this.state.bomList[i][`estimate_id`]}`;
             let data = this.state.currData;
