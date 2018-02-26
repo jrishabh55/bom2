@@ -133,6 +133,10 @@ input:invalid, .is-invalid {
     line-height: 20px !important;
 }
 
+.sm-width {
+    min-width: 80px !important;
+}
+
 hr {
     background-color: #DDDDDD;
     margin-top: 25px;

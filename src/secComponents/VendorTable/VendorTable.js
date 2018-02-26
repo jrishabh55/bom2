@@ -21,7 +21,7 @@ export class VendorTable extends Component {
         this.allBom;
         this.bomIndex = 0;
         this.bomsToFetch = 10;
-        this.showManuDetails = false;
+        this.manuIndex = '';
         // this.test = [
         //     {
         //         description: 'aa',
@@ -43,6 +43,7 @@ export class VendorTable extends Component {
             modalDescData: '',
             bomList: [],
             manuDetails: [],
+            showDetails: ''
         };
     }
 
@@ -50,20 +51,20 @@ export class VendorTable extends Component {
 
 
         /* @Note: not sure e.pageX will work in IE8 */
-        (function(window){
-
-          let supportPageOffset = window.pageXOffset !== undefined;
-          let isCSS1Compat = ((document.compatMode || "") === "CSS1Compat");
-
-          let demoItem2 = document.getElementById("clone-head");
-          window.addEventListener("scroll", function(e) {
-
-            let x = supportPageOffset ? window.pageXOffset : isCSS1Compat ? document.documentElement.scrollLeft : document.body.scrollLeft;
-            let y = supportPageOffset ? window.pageYOffset : isCSS1Compat ? document.documentElement.scrollTop : document.body.scrollTop;
-            demoItem2.style.left = -x + 0 + "px";
-          });
-
-        })(window);
+        // (function(window){
+        //
+        //   let supportPageOffset = window.pageXOffset !== undefined;
+        //   let isCSS1Compat = ((document.compatMode || "") === "CSS1Compat");
+        //
+        //   let demoItem2 = document.getElementById("clone-head");
+        //   window.addEventListener("scroll", function(e) {
+        //
+        //     let x = supportPageOffset ? window.pageXOffset : isCSS1Compat ? document.documentElement.scrollLeft : document.body.scrollLeft;
+        //     let y = supportPageOffset ? window.pageYOffset : isCSS1Compat ? document.documentElement.scrollTop : document.body.scrollTop;
+        //     demoItem2.style.left = -x + 0 + "px";
+        //   });
+        //
+        // })(window);
 
 
         // $(window).scroll(function(){
@@ -90,6 +91,11 @@ export class VendorTable extends Component {
             }
         });
 
+    }
+
+    hideManuDetails() {
+        console.log(this.state.showDetails)
+        this.setState({showDetails: false});
     }
 
     addComment($event, index) {
@@ -226,7 +232,9 @@ export class VendorTable extends Component {
         this.setState({modalDescData: $data});
     }
 
-    manuDetails($data) {
+    manuDetails($data, $index) {
+        this.setState({showDetails: true});
+        this.manuIndex = $index;
         ApiService.get(`/contacts/${$data.customer_id}`).then(res => {
             this.setState({manuDetails: res.contact});
         });
@@ -237,7 +245,10 @@ export class VendorTable extends Component {
                 <div className="manuDetails">
                     <div className="clearfix detailHead">
                         <Col md="12">
-                            <p className="clr-secondary font-lg">Customer Details</p>
+                            <span className="clr-secondary font-lg">Customer Details</span>
+                            <button type="button" className="close">
+                              <span onClick={this.hideManuDetails.bind(this)}>&times;</span>
+                            </button>
                         </Col>
                     </div>
                     <div className="detailBody">
@@ -326,18 +337,18 @@ export class VendorTable extends Component {
                                 <th>HSN</th>
                                 <th>List Price</th>
                                 <th>Discount</th>
-                                <th className="lg-width">Time in days to complete all Qty</th>
-                                <th className="md-width">Free Delivery to</th>
+                                <th>Time in days to complete all Qty</th>
+                                <th>Free Delivery to</th>
                                 <th>Quote to Customer</th>
                                 <th>ShopElect Commission</th>
-                                <th className="lg-width">ShopElect NET Payment to you</th>
+                                <th>ShopElect NET Payment to you</th>
                                 <th>Remarks</th>
                                 <th>Attachment</th>
                                 <th>Customer Notes</th>
                                 <th>Place Bid</th>
                                 </tr>
                             </thead>
-                            <div id="clone-head">
+                            {/*<div id="clone-head">
                             <thead>
                                 <tr className="tableCaption">
                                 <td colSpan="9">Customer details</td>
@@ -371,33 +382,33 @@ export class VendorTable extends Component {
                                 <th>Place Bid</th>
                                 </tr>
                             </thead>
-                            </div>
+                            </div>*/}
                             <tbody>
                             {
                                 this.state.currData.map(($data, $index) => {
                                     return ([<tr className="tableRow">
                                         <td onClick={() => toastr.info("The following operation is not available as of now.")}><i className="fas fa-times cancel"></i></td>
                                         <td onClick={() => toastr.info("The following operation is not available as of now.")}><i className="fas fa-phone"></i></td>
-                                        <td><span onClick={this.descModal.bind(this,$data.description)} data-toggle="modal" data-target="#descModal">{$data.description.substr(0,50) + '...' || '-'}</span></td>
+                                        <td className="clip-content"><span onClick={this.descModal.bind(this,$data.description)} data-toggle="modal" data-target="#descModal">{$data.description || '-'}</span></td>
                                         <td>
                                             {$data.estimate.estimate_id || '-'}<br />
                                             <span className="clr-form-2 font-xs">{$data.estimate.date || '-'}</span>
                                         </td>
-                                        <td className="custName" onClick={this.manuDetails.bind(this, $data.estimate)}><span className="clr-primary">{$data.estimate.customer_name || '-'} <i className="float-right fas fa-info-circle"></i></span>{this.showManuDetails ? manuDetails : ''}</td>
+                                        <td className="custName" onClick={this.manuDetails.bind(this, $data.estimate, $index)}><span className="clr-primary">{$data.estimate.customer_name || '-'} <i className="float-right fas fa-info-circle"></i></span>{((this.state.showDetails) && (this.manuIndex === $index)) ? manuDetails : ''}</td>
                                         <td><Input name={`manuName-${$index}`} type="text" disabled={this.state.editable ? null : 'disabled'} value={$data['item_custom_fields'][0] ? $data['item_custom_fields'][0].value : ''} onChange={this.updateBomFields.bind(this, 'manuName', $index)} /></td>
                                         <td><Input name={`manuPart-${$index}`} type="text" disabled={this.state.editable ? null : 'disabled'} value={$data['item_custom_fields'][1] ? $data['item_custom_fields'][1].value : ''} onChange={this.updateBomFields.bind(this, 'manuPart', $index)} /></td>
                                         <td><Input name={`product_type-${$index}`} type="text" disabled={this.state.editable ? null : 'disabled'} value={$data.product_type || ''} onChange={this.updateBomFields.bind(this, 'product_type', $index)} /></td>
                                         <td>{$data.quantity || '-'}</td>
-                                        <td><Input name={`current_stock-${$index}`} type="number" disabled={this.state.editable ? null : 'disabled'} value={$data.current_stock || ''} onChange={this.updateBomFields.bind(this, 'current_stock', $index)} /></td>
-                                        <td><Input name={`tax_percentage-${$index}`} type="number" disabled={this.state.editable ? null : 'disabled'} value={$data.tax_percentage || ''} onChange={this.updateBomFields.bind(this, 'tax_percentage', $index)} /></td>
-                                        <td><Input name={`hsn_or_sac-${$index}`} type="text" disabled={this.state.editable ? null : 'disabled'} value={$data.hsn_or_sac || ''} onChange={this.updateBomFields.bind(this, 'hsn_or_sac', $index)} /></td>
-                                        <td><Input name={`item_total-${$index}`} type="text" disabled={this.state.editable ? null : 'disabled'} value={$data.item_total || ''} onChange={this.updateBomFields.bind(this, 'item_total', $index)} /></td>
-                                        <td><Input name={`discount-${$index}`} type="number" disabled={this.state.editable ? null : 'disabled'} value={$data.discount || ''} onChange={this.updateBomFields.bind(this, 'discount', $index)} /></td>
-                                        <td><Input name={`time_to_ship-${$index}`} type="number" disabled={this.state.editable ? null : 'disabled'} value={$data.time_to_ship || ''} onChange={this.updateBomFields.bind(this, 'time_to_ship', $index)} /></td>
-                                        <td><Input name={`delivery_city-${$index}`} type="text" disabled={this.state.editable ? null : 'disabled'} value={$data.delivery_city || ''} onChange={this.updateBomFields.bind(this, 'delivery_city', $index)} /></td>
+                                        <td className="sm-width"><Input name={`current_stock-${$index}`} type="number" disabled={this.state.editable ? null : 'disabled'} value={$data.current_stock || ''} onChange={this.updateBomFields.bind(this, 'current_stock', $index)} /></td>
+                                        <td className="sm-width"><Input name={`tax_percentage-${$index}`} type="number" disabled={this.state.editable ? null : 'disabled'} value={$data.tax_percentage || ''} onChange={this.updateBomFields.bind(this, 'tax_percentage', $index)} /></td>
+                                        <td className="md-width"><Input name={`hsn_or_sac-${$index}`} type="text" disabled={this.state.editable ? null : 'disabled'} value={$data.hsn_or_sac || ''} onChange={this.updateBomFields.bind(this, 'hsn_or_sac', $index)} /></td>
+                                        <td className="sm-width"><Input name={`item_total-${$index}`} type="text" disabled={this.state.editable ? null : 'disabled'} value={$data.item_total || ''} onChange={this.updateBomFields.bind(this, 'item_total', $index)} /></td>
+                                        <td className="sm-width"><Input name={`discount-${$index}`} type="number" disabled={this.state.editable ? null : 'disabled'} value={$data.discount || ''} onChange={this.updateBomFields.bind(this, 'discount', $index)} /></td>
+                                        <td className="lg-width"><Input name={`time_to_ship-${$index}`} type="number" disabled={this.state.editable ? null : 'disabled'} value={$data.time_to_ship || ''} onChange={this.updateBomFields.bind(this, 'time_to_ship', $index)} /></td>
+                                        <td className="sm-width"><Input name={`delivery_city-${$index}`} type="text" disabled={this.state.editable ? null : 'disabled'} value={$data.delivery_city || ''} onChange={this.updateBomFields.bind(this, 'delivery_city', $index)} /></td>
                                         <td><Input type="number" disabled={this.state.editable ? null : 'disabled'} defaultValue={'--'} /></td>
                                         <td>{'-'}</td>
-                                        <td>{'-'}</td>
+                                        <td className="lg-width">{'-'}</td>
                                         <td><Input name={`remarks-${$index}`} type="text" disabled={this.state.editable ? null : 'disabled'} value={$data.remarks ||''} onChange={this.updateBomFields.bind(this, 'remarks', $index)} /></td>
                                         <td className="attachment">
                                         <i className="fas fa-plus-circle"></i>

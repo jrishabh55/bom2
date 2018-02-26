@@ -12,7 +12,8 @@
     color: #9B9B9B !important;
 }
 
-.vendorTable table {
+.vendorTable input[type=number], .vendorTable input[type=text] {
+    width: 100% !important;
 }
 
 #vendorTable {

@@ -245,7 +245,7 @@ table .lg-width {
     min-width: 130px;
 }
 table .md-width {
-    max-width: 90px;
+    min-width: 90px !important;
 }
 
 .attachment svg {
