@@ -104,6 +104,7 @@ export class BomTable extends Component {
           let data = this.state.vendorQuotes;
           this.calOrderAmount();
           ApiService.get( `/customer/${ this.getContactId()}/bom/${ this.bomId }/vendor/lowest_quotes` ).then( lowest => {
+              console.log(lowest.aggregations.lowest_quotes.buckets)
             if ( lowest.aggregations.lowest_quotes.buckets.length > 0 ) {
               data.push( lowest );
               this.setState( { vendorQuotes: data } )
@@ -397,7 +398,7 @@ export class BomTable extends Component {
           <td>{'-'}</td>,
           <td>{getProp( this.state.vendorData[ $i ][$data.line_item_id], 'discount' ) || '-'}</td>,
           <td>{getProp( this.state.vendorData[ $i ][$data.line_item_id], 'current_stock' ) || '-'}</td>,
-          <td>{getProp( this.state.vendorData[ $i ][$data.line_item_id], '-' ) || '-'}</td>,
+          <td>{getProp( this.state.vendorData[ $i ][$data.line_item_id], 'time_to_ship' ) || '-'}</td>,
           <td>{getProp( this.state.vendorData[ $i ][$data.line_item_id], 'delivery_city' ) || '-'}</td>,
           <td>{getProp( this.state.vendorData[ $i ][$data.line_item_id], '-' ) || '-'}</td>
         ] )
@@ -637,7 +638,7 @@ export class BomTable extends Component {
                   <th className="sNo">S No</th>
                   <th className="sort" onClick={this.sorting.bind( this, '[item_custom_fields][0].value' )}>Manufacturer</th>
                   <th className="sort" onClick={this.sorting.bind( this, '[item_custom_fields][1].value' )}>Manufacturer Part No</th>
-                  <th>Description</th>
+                  <th className="lg-width">Description</th>
                   <th className="sort" onClick={this.sorting.bind( this, 'quantity' )}>Qty</th>
                   <th>GST %</th>
                   <th>HSN</th>
