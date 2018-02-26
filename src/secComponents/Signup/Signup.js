@@ -394,7 +394,6 @@ export class SignUp extends Component {
                     }
                 }
             });
-            proms.push( prom );
         });
 
         Promise.all( proms ).then( () => {
