@@ -7,6 +7,7 @@ import { Link } from 'react-router-dom';
 import { ApiService } from './services/api.service';
 import { StorageService } from './services/storage.service';
 import { AuthService } from './services/auth.service';
+import { BomService } from './services/bom.service';
 import { parseCsvFile } from './helpers';
 
 class App extends Component {
@@ -41,12 +42,8 @@ class App extends Component {
   async loadFile( files ) {
     const { history } = this.props;
     const data = await parseCsvFile( files[ 0 ] );
-    history.push( {
-      pathname: '/bom/new',
-      state: {
-        dd: data
-      }
-    } );
+    BomService.addFromCsv(data);
+    history.push( { pathname: '/bom/import' } );
   }
 
   render() {
