@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 import registerServiceWorker from './registerServiceWorker';
 
 import bootstrap from 'bootstrap';
+import './lib/definations';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './secComponents/main.css';
 import './lib/csv';
