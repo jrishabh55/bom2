@@ -43,7 +43,7 @@ class Auth0 {
     });
   }
 
-  sendMail(email) {
+  async sendMail(email) {
     return new Promise((resolve, reject) => {
       this.auth0.passwordlessStart({
         connection: 'email',

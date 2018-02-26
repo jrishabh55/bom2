@@ -19,12 +19,18 @@ export class Login extends Component {
         this.state = { loginType: '' };
     }
 
+    componentWillMount() {
+        if (AuthService.isAuthenticated()) {
+            this.props.history.push('/bom');
+        }
+    }
+
     fetchOtp() {
         this.otp = $('input[name=otp]').val();
     }
 
     doLogin() {
-        if(this.otp.length === 4) {
+        if(this.otp && this.otp.length === 4) {
             if(this.state.loginType === 'sms') {
                 Auth0.loginWithSms(this.phoneNumber, this.otp)
             }
@@ -42,7 +48,7 @@ export class Login extends Component {
         let reEmail = /^([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/i;
         let reMobile = /^([0|+[0-9]{1,5})?([7-9][0-9]{9})$/;
         if (reEmail.test($val)){
-            this.setState({loginType: 'email'},() => {} );
+            this.setState({loginType: 'email'});
             this.email = $val;
             AuthService.checkUser(this.email, 'email').then(res => {
                 if( res.success ) {
@@ -59,7 +65,7 @@ export class Login extends Component {
 
         }
         else if (reMobile.test($val)) {
-            this.setState({loginType: 'sms'},() => {} );
+            this.setState({loginType: 'sms'});
             this.phoneNumber = $val;
             AuthService.checkUser(this.phoneNumber, 'mobile').then(res => {
                 if( res.success ) {
@@ -88,13 +94,13 @@ export class Login extends Component {
             <div className="login">
                 <Container fluid={true} className="loginCont">
                     <Row className="justify-content-center">
-                        <Col md="4" className="stepCont" style={{"min-width": "450px"}}>
+                        <Col md="4" className="stepCont" style={{ minWidth: "400px", maxWidth: "450px" }}>
                             <div className="loginStep">
                                 <div className="clearfix loginHead">
-                                    <Col md="6">
+                                    <Col sm="6">
                                         <Link to="/login"><p>SIGN IN</p></Link>
                                     </Col>
-                                    <Col md="6" className="s-bg-secondary clr-primary">
+                                    <Col sm="6" className="s-bg-secondary clr-primary">
                                         <Link to="/signup"><p>SIGN UP</p></Link>
                                     </Col>
                                 </div>
