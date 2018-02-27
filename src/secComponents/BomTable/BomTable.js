@@ -303,7 +303,15 @@ export class BomTable extends Component {
   }
 
   selectSupp($i) {
-      console.log()
+
+      this.state.currData.map(($data, $index) => {
+          this.state.vendorData.map(($data2, $it) => {
+              $(`#suppQ-${$index}-${$it}`).prop('checked', false);
+              $(`#suppInput-${$it}`).prop('checked', false)
+          })
+          $(`#suppInput-${$i}`).prop('checked', true)
+      })
+
       if($(`#suppInput-${$i}`).prop('checked')===true){
           this.state.currData.map(($data, $index) => {
               console.log($(`#suppQ-${$index}-${$i}`))
@@ -691,7 +699,7 @@ export class BomTable extends Component {
                               <Input id={`suppInput-${$i}`} onChange={this.selectSupp.bind(this, $i)} type="checkbox" name={`suppInput-${$i}`} />
                               <span className="checkmark"></span>
                             </label>
-                              <span className="ml-3 sort" onClick={this.sorting.bind( this, 'supplierA.price' )}>Lowest Quote</span>
+                              <span className="ml-3 sort" onClick={this.sorting.bind( this, 'supplierA.price' )}>{$i==0 ? 'Lowest Quote' : `Supplier ${$i}`}</span>
                             </th>,
                             (
                               this.state.supp
