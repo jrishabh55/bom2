@@ -372,7 +372,7 @@ export class SignUp extends Component {
 
     register(e) {
         let vendorId = [];
-        const proms =  this.state.vendorData.map(($vendor, $index) => {
+        const proms = this.state.vendorData.map(($vendor, $index) => {
             const data = {
                 company_name: $vendor.name,
                 contact_name: $vendor.name,
