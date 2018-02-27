@@ -10,7 +10,7 @@ class Auth0 {
     this.auth0 = new auth0.WebAuth({
       domain: 'shopelect.auth0.com',
       clientID: 'Ppfj1JyyG8smHdYi2R1gPqSSCALD3F0L',
-      redirectUri: this.isLocal ? 'http://localhost:3000/callback' : 'http://bom.shopelect.com/callback',
+      redirectUri: this.isLocal ? 'http://localhost:3000/callback' : 'https://bom.shopelect.com/callback',
       audience: 'https://shopelect.auth0.com/api/v2/',
       responseType: 'token'
     });

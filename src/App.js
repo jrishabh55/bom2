@@ -93,7 +93,7 @@ class App extends Component {
                     <div className="droptext">
                       <span>Drag a BOM file here
                       </span>
-                      <span className="accepts">(.ods, Excel, .csv, .txt, Eagle 6 .sch)</span>
+                      <span className="accepts">(.csv)</span>
                     </div>
                   </Dropzone>
                 </div>
