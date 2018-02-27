@@ -84,23 +84,9 @@ export class VendorTable extends Component {
         ApiService.get(`/bom`).then(res => {
             this.setState({ bomList: res.estimates }, this.fetchBom.bind(this));
         });
-        $(window).on('scroll', () => {
-            if ($(window).scrollTop() >= $(document).height() - $(window).height() - 10) {
-                  // this.fetchBom();
-
-               }
-        })
-
-        $(window).scroll(function() {
-            if ($(this).scrollTop() == 0) {
-
-            }
-        });
-
     }
 
     hideManuDetails() {
-        console.log(this.state.showDetails)
         this.setState({showDetails: false});
     }
 
@@ -136,10 +122,10 @@ export class VendorTable extends Component {
         let value = $(`[name=${$field}-${$index}]`)[0].value;
         let newData = this.state.currData;
         if($field == 'manuName'){
-            newData[$index]['item_custom_fields'][0] ? newData[$index]['item_custom_fields'][0].value_formatted = value : '';
+            newData[$index]['item_custom_fields'][0] ? newData[$index]['item_custom_fields'][0].value = value : '';
         }
         else if($field == 'manuPart'){
-            newData[$index]['item_custom_fields'][1] ? newData[$index]['item_custom_fields'][1].value_formatted = value : '';
+            newData[$index]['item_custom_fields'][1] ? newData[$index]['item_custom_fields'][1].value = value : '';
         }
         else {
             newData[$index][$field] = value;
@@ -168,7 +154,6 @@ export class VendorTable extends Component {
         }
         // let e = $('#clone-head > thead .mainTableHead th'[]);
         // e[0].css('width', '200px')
-        console.log(this.headWidth)
         this.bomIndex += this.bomsToFetch;
     }
 
@@ -189,9 +174,8 @@ export class VendorTable extends Component {
     sorting($colIndex) {
         let $orderPar = this.orderAsc ? 'asc' : 'desc';
         let currTableData = this.state.currData;
-        console.log(this.state.currData)
         currTableData = _.orderBy(currTableData, $colIndex, $orderPar);
-        this.setState({currData: currTableData}, () => console.log(this.state.currData));
+        this.setState({currData: currTableData});
         this.orderAsc = !this.orderAsc;
     }
 
@@ -291,34 +275,7 @@ export class VendorTable extends Component {
                 </div>
         )
         return (<div className="vendorTable">
-            <Container fluid={true}>
-                <Row id="vendorHead">
-                    <Col md="6">
-                        <span className="font-md clr-grey">Order Details</span>
-                    </Col>
-                    <Col md="6">
-                        <div className="float-right">
-                            <span className="btn empty-btn">Export Orders as Excel</span>
-                            <span className="ml-1 clr-secondary font-xs mr-1"> Currency </span>
-                            <FormGroup>
-                                <div className="selectCont alt-dd">
-                                    <Input className="empty-input" type="select" name="timeline">
-                                        <option>INR</option>
-                                    </Input>
-                                    </div>
-                            </FormGroup>
-                        </div>
-                    </Col>
-                    <div className="clearfix" />
-                    <Col md className="float-right">
-                        <div className="float-right">
-                            <span className="font-xs clr-secondary ml-3">Order Amount</span>
-                            <span className="font-l clr-grey ml-2">55310.50</span>
-                            <span className="btn fill-btn ml-3">Save Order</span>
-                        </div>
-                    </Col>
-                </Row>
-                <Row>
+            <Row>
                     <Col>
                     <Table id="vendorTable" bordered>
                             <thead>
@@ -329,29 +286,28 @@ export class VendorTable extends Component {
                                 <td colSpan="4">Customer Custom Columns</td>
                                 </tr>
                                 <tr className="mainTableHead">
-                                <th className="clr-primary" onClick={this.edit.bind(this)}><a href="javascript:void()">{this.state.editable ? 'Save' : 'Edit'}</a></th>
+                                <th>Place Bid</th>
                                 <th>Call Customer</th>
                                 <th className="lg-width">Description</th>
                                 <th className="sort lg-width" onClick={this.sorting.bind(this, '["estimate"].estimate_id')}>Customer BOM NO AND DATE</th>
                                 <th className="lg-width sort" onClick={this.sorting.bind(this, '["estimate"].customer_name')}>Customer Name</th>
                                 <th className="sort" onClick={this.sorting.bind(this, '["item_custom_fields"][0].value')}>Manufacturer</th>
                                 <th className="sort" onClick={this.sorting.bind(this, '["item_custom_fields"][1].value')}>Manufacturer Part No</th>
-                                <th className="sort lg-width" onClick={this.sorting.bind(this, 'product_type')}>Item Group (Sub Brand)</th>
+                                {/*<th className="sort lg-width" onClick={this.sorting.bind(this, 'product_type')}>Item Group (Sub Brand)</th>*/}
                                 <th className="sort" onClick={this.sorting.bind(this, 'quantity')}>Qty</th>
                                 <th>Current Stock</th>
                                 <th>GST%</th>
                                 <th>HSN</th>
                                 <th>List Price</th>
-                                <th>Discount</th>
+                                <th>Discount %</th>
+                                <th>Quote to Customer</th>
                                 <th>Time in days to complete all Qty</th>
                                 <th>Free Delivery to</th>
-                                <th>Quote to Customer</th>
                                 <th>ShopElect Commission</th>
                                 <th>ShopElect NET Payment to you</th>
                                 <th>Remarks</th>
                                 <th>Attachment</th>
                                 <th>Customer Notes</th>
-                                <th>Place Bid</th>
                                 </tr>
                             </thead>
                             {/*<div id="clone-head">
@@ -393,7 +349,7 @@ export class VendorTable extends Component {
                             {
                                 this.state.currData.map(($data, $index) => {
                                     return ([<tr className="tableRow">
-                                        <td onClick={() => toastr.info("The following operation is not available as of now.")}><i className="fas fa-times cancel"></i></td>
+                                        <td><span onClick={this.saveOrder.bind(this,$data,$index)}><i className="fas fa-check"></i></span></td>
                                         <td onClick={() => toastr.info("The following operation is not available as of now.")}><i className="fas fa-phone"></i></td>
                                         <td className="clip-content"><span onClick={this.descModal.bind(this,$data.description)} data-toggle="modal" data-target="#descModal">{$data.description || '-'}</span></td>
                                         <td>
@@ -401,27 +357,26 @@ export class VendorTable extends Component {
                                             <span className="clr-form-2 font-xs">{$data.estimate.date || '-'}</span>
                                         </td>
                                         <td className="custName" onClick={this.manuDetails.bind(this, $data.estimate, $index)}><span className="clr-primary">{$data.estimate.customer_name || '-'} <i className="float-right fas fa-info-circle"></i></span>{((this.state.showDetails) && (this.manuIndex === $index)) ? manuDetails : ''}</td>
-                                        <td><Input name={`manuName-${$index}`} type="text" disabled={this.state.editable ? null : 'disabled'} value={$data['item_custom_fields'][0] ? $data['item_custom_fields'][0].value : ''} onChange={this.updateBomFields.bind(this, 'manuName', $index)} /></td>
-                                        <td><Input name={`manuPart-${$index}`} type="text" disabled={this.state.editable ? null : 'disabled'} value={$data['item_custom_fields'][1] ? $data['item_custom_fields'][1].value : ''} onChange={this.updateBomFields.bind(this, 'manuPart', $index)} /></td>
-                                        <td><Input name={`product_type-${$index}`} type="text" disabled={this.state.editable ? null : 'disabled'} value={$data.product_type || ''} onChange={this.updateBomFields.bind(this, 'product_type', $index)} /></td>
+                                        <td><Input name={`manuName-${$index}`} placeholder="Manufacturer" type="text" disabled={this.state.editable ? null : 'disabled'} value={$data['item_custom_fields'][0] ? $data['item_custom_fields'][0].value : ''} onChange={this.updateBomFields.bind(this, 'manuName', $index)} /></td>
+                                        <td><Input name={`manuPart-${$index}`} placeholder="Part No" type="text" disabled={this.state.editable ? null : 'disabled'} value={$data['item_custom_fields'][1] ? $data['item_custom_fields'][1].value : ''} onChange={this.updateBomFields.bind(this, 'manuPart', $index)} /></td>
+                                        {/*<td><Input name={`product_type-${$index}`} placeholder="Item Group" type="text" disabled={this.state.editable ? null : 'disabled'} value={$data.product_type || ''} onChange={this.updateBomFields.bind(this, 'product_type', $index)} /></td>*/}
                                         <td>{$data.quantity || '-'}</td>
-                                        <td className="sm-width"><Input name={`current_stock-${$index}`} type="number" disabled={this.state.editable ? null : 'disabled'} value={$data.current_stock || ''} onChange={this.updateBomFields.bind(this, 'current_stock', $index)} /></td>
-                                        <td className="sm-width"><Input name={`tax_percentage-${$index}`} type="number" disabled={this.state.editable ? null : 'disabled'} value={$data.tax_percentage || ''} onChange={this.updateBomFields.bind(this, 'tax_percentage', $index)} /></td>
-                                        <td className="md-width"><Input name={`hsn_or_sac-${$index}`} type="text" disabled={this.state.editable ? null : 'disabled'} value={$data.hsn_or_sac || ''} onChange={this.updateBomFields.bind(this, 'hsn_or_sac', $index)} /></td>
-                                        <td className="sm-width"><Input name={`item_total-${$index}`} type="text" disabled={this.state.editable ? null : 'disabled'} value={$data.item_total || ''} onChange={this.updateBomFields.bind(this, 'item_total', $index)} /></td>
-                                        <td className="sm-width"><Input name={`discount-${$index}`} type="number" disabled={this.state.editable ? null : 'disabled'} value={$data.discount || ''} onChange={this.updateBomFields.bind(this, 'discount', $index)} /></td>
-                                        <td className="lg-width"><Input name={`time_to_ship-${$index}`} type="number" disabled={this.state.editable ? null : 'disabled'} value={$data.time_to_ship || ''} onChange={this.updateBomFields.bind(this, 'time_to_ship', $index)} /></td>
-                                        <td className="sm-width"><Input name={`delivery_city-${$index}`} type="text" disabled={this.state.editable ? null : 'disabled'} value={$data.delivery_city || ''} onChange={this.updateBomFields.bind(this, 'delivery_city', $index)} /></td>
-                                        <td><Input type="number" disabled={this.state.editable ? null : 'disabled'} defaultValue={'--'} /></td>
+                                        <td className="sm-width"><Input name={`current_stock-${$index}`} placeholder="Stock" type="number" disabled={this.state.editable ? null : 'disabled'} value={$data.current_stock || ''} onChange={this.updateBomFields.bind(this, 'current_stock', $index)} /></td>
+                                        <td className="sm-width"><Input name={`tax_percentage-${$index}`} placeholder="GST %" type="number" disabled={this.state.editable ? null : 'disabled'} value={$data.tax_percentage || ''} onChange={this.updateBomFields.bind(this, 'tax_percentage', $index)} /></td>
+                                        <td className="md-width"><Input name={`hsn_or_sac-${$index}`} placeholder="HSN" type="text" disabled={this.state.editable ? null : 'disabled'} value={$data.hsn_or_sac || ''} onChange={this.updateBomFields.bind(this, 'hsn_or_sac', $index)} /></td>
+                                        <td className="md-width"><Input name={`item_total-${$index}`} placeholder="List Price" type="number" disabled={this.state.editable ? null : 'disabled'} value={$data.item_total || ''} onChange={this.updateBomFields.bind(this, 'item_total', $index)} /></td>
+                                        <td className="sm-width"><Input name={`discount-${$index}`} placeholder="Discount" type="number" disabled={this.state.editable ? null : 'disabled'} value={$data.discount || ''} onChange={this.updateBomFields.bind(this, 'discount', $index)} /></td>
+                                        <td className="md-width"><Input name={`quote_to_customer-${$index}`} placeholder="Quote" type="number" disabled={this.state.editable ? null : 'disabled'} value={((100 - $data.discount) / 100 * $data.item_total).toFixed(2) || ''} onChange={this.updateBomFields.bind(this, 'quote_to_customer', $index)} /></td>
+                                        <td className="lg-width"><Input name={`time_to_ship-${$index}`} placeholder="Time to Complete Order" type="number" disabled={this.state.editable ? null : 'disabled'} value={$data.time_to_ship || ''} onChange={this.updateBomFields.bind(this, 'time_to_ship', $index)} /></td>
+                                        <td className="sm-width"><Input name={`delivery_city-${$index}`} placeholder="Free Delivery" type="text" disabled={this.state.editable ? null : 'disabled'} value={$data.delivery_city || ''} onChange={this.updateBomFields.bind(this, 'delivery_city', $index)} /></td>
                                         <td>{'-'}</td>
                                         <td className="lg-width">{'-'}</td>
-                                        <td><Input name={`remarks-${$index}`} type="text" disabled={this.state.editable ? null : 'disabled'} value={$data.remarks ||''} onChange={this.updateBomFields.bind(this, 'remarks', $index)} /></td>
+                                        <td><Input name={`remarks-${$index}`} type="text" disabled={this.state.editable ? null : 'disabled'} placeholder="Remarks" value={$data.remarks ||''} onChange={this.updateBomFields.bind(this, 'remarks', $index)} /></td>
                                         <td className="attachment">
-                                        <i className="fas fa-plus-circle"></i>
-                                        <i className="far fa-file-pdf"></i>
+                                            <i className="fas fa-plus-circle"></i>
+                                            <i className="far fa-file-pdf"></i>
                                         </td>
                                         <td>{'-'}</td>
-                                        <td><span onClick={this.saveOrder.bind(this,$data,$index)}><i className="fas fa-check"></i></span></td>
                                             </tr>,
                                                 <tr>
                                                 <td colSpan="23" className="tableFooter">
@@ -505,7 +460,6 @@ export class VendorTable extends Component {
 
                         </Col>
                     </Row>
-                </Container>
             </div>)
     }
 }
