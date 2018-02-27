@@ -23,6 +23,7 @@ export class BomTable extends Component {
     this.bomId = 0;
     this.appendData = '';
     this.orderAsc = true;
+    this.thisSupplier;
     this.searchProdList = [];
     this.currencyRates = {
       USD: 0.015535,
@@ -293,6 +294,23 @@ export class BomTable extends Component {
     } );
   }
 
+  selectSupp($i) {
+      console.log()
+      if($(`#suppInput-${$i}`).prop('checked')===true){
+          this.state.currData.map(($data, $index) => {
+              console.log($(`#suppQ-${$index}-${$i}`))
+              $(`#suppQ-${$index}-${$i}`).prop('checked', true)
+          })
+      }
+      else {
+          this.state.currData.map(($data, $index) => {
+              console.log($(`#suppQ-${$index}-${$i}`))
+              $(`#suppQ-${$index}-${$i}`).prop('checked', false)
+          })
+      }
+
+  }
+
   appendInput( $index ) {
     this.state.searchItemValue = '';
     let currTableData = this.state.currData;
@@ -402,7 +420,7 @@ export class BomTable extends Component {
     return ( this.supplierDataBody = [
       <td className="stock">
         <label className="checkContainer">
-          <Input type="checkbox" name="signedIn"/>
+          <Input id={`suppQ-${$index}-${$i}`} type="checkbox" name={`suppQ-${$index}-${$i}`} />
           <span className="checkmark"></span>
         </label>
         &#8377;{getProp( this.state.vendorData[ $i ][$data.line_item_id], 'bid_price' ) || '-'}<br/>
@@ -525,19 +543,6 @@ export class BomTable extends Component {
       <th>Remarks</th>,
       <th>Supplier Attachment</th>
     ];
-    this.supplierDataHead = [
-      <th className="supplier">
-        <label className="checkContainer">
-          <Input type="checkbox" name="signedIn"/>
-          <span className="checkmark"></span>
-        </label>
-        <span className="ml-3 sort" onClick={this.sorting.bind( this, 'supplierA.price' )}>Lowest Quote</span>
-      </th>,
-      (
-        this.state.supp
-        ? thisSupplier
-        : null)
-    ]
 
     return ( <div className="bomTable">
       <Container fluid={true}>
@@ -663,7 +668,23 @@ export class BomTable extends Component {
                   <th>HSN</th>
                   <th className="sort" onClick={this.sorting.bind( this, 'rate' )}>Price</th>
                   <th>Attachment</th>
-                  { this.state.vendorData.map( ( $vData, $i ) =>  this.supplierDataHead ) }
+                  { this.state.vendorData.map( ( $vData, $i ) => {
+                      return (
+                          [
+                            <th className="supplier">
+                            <label className="checkContainer">
+                              <Input id={`suppInput-${$i}`} onChange={this.selectSupp.bind(this, $i)} type="checkbox" name={`suppInput-${$i}`} />
+                              <span className="checkmark"></span>
+                            </label>
+                              <span className="ml-3 sort" onClick={this.sorting.bind( this, 'supplierA.price' )}>Lowest Quote</span>
+                            </th>,
+                            (
+                              this.state.supp
+                              ? thisSupplier
+                              : null)
+                          ]
+                      )
+                  }  ) }
                   <th>Customer Notes</th>
                   <th>Bid Status</th>
                 </tr>
