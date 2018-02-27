@@ -162,9 +162,9 @@ export class BomTable extends Component {
         this.currencyRates.GBP = res.rates.GBP;
       } );
 
-      this.saveBtn = <span className="btn fill-btn ml-3" onClick={this.updateOrder.bind( this )}>Update</span>;
+      this.saveBtn = <span className="btn fill-btn ml-3" onClick={this.po.bind( this )}>Place Order</span>;
     } else {
-      this.saveBtn = <span className="btn fill-btn ml-3" onClick={this.placeOrder.bind( this )}>Place Order</span>;
+      this.saveBtn = <span className="btn fill-btn ml-3" onClick={this.placeOrder.bind( this )}>Create BOM</span>;
     }
 
     $( "#bomTitle" ).on( 'focus', () => {
@@ -193,8 +193,8 @@ export class BomTable extends Component {
   }
 
   saveBOM() {
-      this.updateBomTitle();
-
+    const cb = this.isNew || this.isImport ? this.placeOrder : this.updateOrder;
+    this.updateBomTitle(cb);
   }
 
   getContactId() {
@@ -225,27 +225,30 @@ export class BomTable extends Component {
     let data = {
       items: this.state.currData.map( ( $data, $index ) => {
         let qty = $( `[name=quantity-${ $index }]` )[ 0 ].value;
+        $data = $data._source || $data;
         return ( {
-          "name": $data._source.name,
-          "description": $data._source.description,
+          "name": $data.name,
+          "description": $data.description,
           "item_order": $index,
-          "bcy_rate": $data._source.msrp,
-          "rate": $data._source.msrp,
+          "bcy_rate": $data.msrp,
+          "rate": $data.msrp,
           "quantity": $data.quantity,
-          "item_total": ( ( $data.quantity || 0 ) * ( $data.rate || $data._source.msrp ) ),
+          "item_total": ( ( $data.quantity || 0 ) * ( $data.rate || $data.msrp ) ),
           "item_custom_fields": [
             {
               "label": "Customer Manufacturer Part No",
-              "value": $data._source.company_sku
+              "value": $data.company_sku
             }, {
               "label": "Customer Manufacturer",
-              "value": $data._source.manufacturer
+              "value": $data.manufacturer
             }
           ]
         } );
       } ),
       title: this.state.bom_title
     };
+
+    console.log( `/customer/${ this.getContactId() }/bom` );
 
     ApiService.post( `/customer/${ this.getContactId() }/bom`, data ).then( res => {
       if ( res.message === "The estimate has been created." ) {
@@ -258,6 +261,43 @@ export class BomTable extends Component {
   }
 
   updateOrder( redirect = true ) {
+    const data = {
+      items: this.state.currData.map( ( $data, $index ) => {
+        $data = $data._source || $data;
+        const qty = $( `[name=quantity-${ $index }]` )[ 0 ].value;
+        console.log( $data.quantity, qty );
+        return ( {
+          "description": $data.description,
+          "item_order": $index,
+          "bcy_rate": $data.msrp || $data.bcy_rate,
+          "rate": $data.msrp || $data.rate,
+          "quantity": $data.quantity,
+          "item_total": $data.item_total || ( ( $data.quantity || 0 ) * ( $data.rate || $data.msrp ) ),
+          "line_item_id": $data.line_item_id,
+          "item_custom_fields": [
+            {
+              "label": "Customer Manufacturer",
+              "value": $data.manufacturer || getProp( $data.item_custom_fields[0], 'value' )
+            }, {
+              "label": "Customer Manufacturer Part No",
+              "value": $data.company_sku || getProp( $data.item_custom_fields[1], 'value' )
+            }
+          ]
+
+        } );
+      } ),
+      title: this.state.bom_title
+    };
+
+    return ApiService.put( `/customer/${ StorageService.getItem( 'contactId' )}/bom/${ this.bomId }`, data ).then( res => {
+      if ( redirect ) {
+        this.props.history.push( '/bom' );
+      }
+      toastr.success( res.message );
+    } );
+  }
+
+  po( redirect = true ) {
     const data = {
       items: this.state.currData.map( ( $data, $index ) => {
         $data = $data._source || $data;
@@ -475,11 +515,11 @@ export class BomTable extends Component {
     } )
   }
 
-  updateBomTitle() {
+  updateBomTitle( cb ) {
     this.setState( {
       bom_title: $( '#bomTitle' )[ 0 ].value,
       bomTitleEditable: false
-    } );
+    }, cb );
   }
 
   cancelBomEdit() {
@@ -586,7 +626,7 @@ export class BomTable extends Component {
             ( () => {
               if ( this.state.bomTitleEditable ) {
                 return ( <Col md="2">
-                  <span className="font-md clr-blue" onClick={this.updateBomTitle.bind( this )}>Save</span>
+                  <span className="font-md clr-blue" onClick={this.saveBOM.bind( this )}>Save</span>
                   <span onClick={this.cancelBomEdit.bind( this )} className="ml-1 font-md clr-blue">
                     Cancel</span>
                 </Col> )
