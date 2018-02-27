@@ -196,6 +196,7 @@ export class BomTable extends Component {
       }, {} );
     }
     temp.push( quote );
+    console.log(temp)
     this.setState( { vendorData: temp } );
   }
 
@@ -427,7 +428,7 @@ export class BomTable extends Component {
     return ( this.supplierDataBody = [
       <td className="stock">
         <label className="checkContainer">
-          <Input id={`suppQ-${$index}-${$i}`} type="checkbox" name={`suppQ-${$index}-${$i}`} />
+          <Input onChange={this.particularSupp.bind(this,$index, $i)} id={`suppQ-${$index}-${$i}`} type="checkbox" name={`suppQ-${$index}-${$i}`} />
           <span className="checkmark"></span>
         </label>{console.log(this.state.vendorData)}
         &#8377;{getProp( this.state.vendorData[ $i ][$data.line_item_id], 'bid_price' ) || '-'}<br/>
@@ -509,6 +510,13 @@ export class BomTable extends Component {
         toastr.success( "Item has been removed" );
       }
     } );
+  }
+
+  particularSupp($index, $i) {
+      this.state.vendorData.map(($data, $itr) => {
+          $(`#suppQ-${$index}-${$itr}`).prop('checked', false);
+      })
+      $(`#suppQ-${$index}-${$i}`).prop('checked', true);
   }
 
   exportBom() {
