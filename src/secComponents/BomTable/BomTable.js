@@ -140,13 +140,15 @@ export class BomTable extends Component {
               console.log(lowest.aggregations.lowest_quotes.buckets)
             if ( lowest.aggregations.lowest_quotes.buckets.length > 0 ) {
               data.push( lowest );
-              this.setState( { vendorQuotes: data } )
+              this.setState( { vendorQuotes: data }, console.log(this.state.vendorQuotes) )
               this.quotedCurrData( 0 );
               prefVend.map( ( $vend, $i ) => {
                 data = this.state.vendorQuotes;
                 ApiService.get( `/customer/${ this.getContactId()}/bom/${ this.bomId}/vendor/${ $vend }` ).then( qRes => {
+                    console.log(qRes)
                   if ( qRes.hits.hits.length > 0 ) {
                     data.push( qRes );
+                    console.log(qRes)
                     this.setState( { vendorQuotes: data } );
                     this.quotedCurrData( ( $i + 1 ) );
                   }
@@ -179,13 +181,18 @@ export class BomTable extends Component {
     let temp = this.state.vendorData;
     if ( $i == 0 ) {
       quote = vData[ temp.length ].aggregations.lowest_quotes.buckets.reduce( ( ittr, item ) => {
+          console.log(item)
         ittr[ item.key ] = item.min_quotes.hits.hits[ 0 ]._source.quote;
         return ittr;
       }, {} );
     } else {
-      quote = vData[ temp.length ].hits.hits.reduce( ( ittr, item ) => {
-        ittr[ item.key ] = item._source;
-        return ittr;
+      quote = vData[ temp.length ].hits.hits.reduce( ( itttr, item ) => {
+          console.log(item['_source'])
+          console.log(item['_source'].line_item_id)
+        itttr[ item['_source'].line_item_id ] = item._source.quote;
+        console.log("ITTR", itttr)
+        console.log(item)
+        return itttr;
       }, {} );
     }
     temp.push( quote );
@@ -462,7 +469,7 @@ export class BomTable extends Component {
         <label className="checkContainer">
           <Input id={`suppQ-${$index}-${$i}`} type="checkbox" name={`suppQ-${$index}-${$i}`} />
           <span className="checkmark"></span>
-        </label>
+        </label>{console.log(this.state.vendorData)}
         &#8377;{getProp( this.state.vendorData[ $i ][$data.line_item_id], 'bid_price' ) || '-'}<br/>
         <span className="stockLeft">{getProp( this.state.vendorData[ $i ][$data.line_item_id], 'current_stock' ) || '-'}</span>
         <span>
@@ -756,7 +763,7 @@ export class BomTable extends Component {
                           this.updateBomFields.call( this, 'quantity', $index );
                           this.calOrderAmount.call( this, $index );
                         }}/>
-                        </td>
+                        </td>{console.log($data.line_item_id)}
                         <td>{getProp( this.state.vendorData[$data.line_item_id], 'GST' ) || $data.tax_percentage}</td>
                         <td>{getProp( this.state.vendorData[$data.line_item_id], 'HSN' )}</td>
                         <td>
