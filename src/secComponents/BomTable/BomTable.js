@@ -362,7 +362,12 @@ export class BomTable extends Component {
         this.props.history.push( '/bom' );
       }
       console.log(res)
-      toastr.success( res.message );
+      if(res.code == 29009) {
+          toastr.error( res.message );
+      }
+      else {
+          toastr.success( res.message );
+      }
     } );
   }
 
@@ -779,7 +784,7 @@ export class BomTable extends Component {
                               <Input id={`suppInput-${$i}`} onChange={this.selectSupp.bind(this, $i)} type="checkbox" name={`suppInput-${$i}`} />
                               <span className="checkmark"></span>
                             </label>
-                              <span className="ml-3 sort" onClick={this.sorting.bind( this, 'supplierA.price' )}>{$i==0 ? 'Lowest Quote' : `Supplier ${$i}`}</span>
+                              <span className="ml-3 sort" onClick={this.sorting.bind( this, 'supplierA.price' )}>{$i==0 ? 'ShopElect' : `Supplier ${$i}`}</span>
                             </th>,
                             (
                               this.state.supp
