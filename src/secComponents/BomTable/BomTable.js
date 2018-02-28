@@ -38,6 +38,9 @@ export class BomTable extends Component {
     this.bomId = this.props.match.params.bomId;
     this.isNew = this.bomId === 'new';
     this.isImport = this.bomId === 'import';
+    // Array for prices to be selected by customer.
+    this.selectedPrices = [];
+
     let comment = [];
     let history = [];
 
@@ -298,12 +301,18 @@ export class BomTable extends Component {
   }
 
   po( redirect = true ) {
-    const data = {
-      items: this.state.currData.map( ( $data, $index ) => {
-        $data = $data._source || $data;
+
+    const items = [];
+
+    this.state.currData.forEach(($data, $index) => {
+
+      // Please update this to supplier price and not list price
+      $data = $data._source || $data;
+      const rate = $data.msrp || $data.rate;
+
+      if (this.selectedPrices[$data.line_item_id] && rate ) {
         const qty = $( `[name=quantity-${ $index }]` )[ 0 ].value;
-        console.log( $data.quantity, qty );
-        return ( {
+        const data =  ( {
           "description": $data.description,
           "item_order": $index,
           "bcy_rate": $data.msrp || $data.bcy_rate,
@@ -318,13 +327,18 @@ export class BomTable extends Component {
             }, {
               "label": "Customer Manufacturer Part No",
               "value": $data.company_sku || getProp( $data.item_custom_fields[1], 'value' )
+            }, {
+              'label': 'vendor_id',
+              "value": "" // Please update vendor id here
             }
           ]
 
         } );
-      } ),
-      title: this.state.bom_title
-    };
+        items.push(data);
+      }
+    });
+
+    const data = { items: items };
 
     return ApiService.put( `/customer/${ StorageService.getItem( 'contactId' )}/bom/${ this.bomId }`, data ).then( res => {
       if ( redirect ) {
@@ -466,7 +480,7 @@ export class BomTable extends Component {
     return ( this.supplierDataBody = [
       <td className="stock">
         <label className="checkContainer">
-          <Input onChange={this.particularSupp.bind(this,$index, $i)} id={`suppQ-${$index}-${$i}`} type="checkbox" name={`suppQ-${$index}-${$i}`} />
+          <Input onChange={this.particularSupp.bind(this,$index, $i, $data.line_item_id)} id={`suppQ-${$index}-${$i}`} type="checkbox" name={`suppQ-${$index}-${$i}`} />
           <span className="checkmark"></span>
         </label>
         &#8377;{getProp( this.state.vendorData[ $i ][$data.line_item_id], 'bid_price' ) || '-'}<br/>
@@ -549,7 +563,7 @@ export class BomTable extends Component {
     } );
   }
 
-  particularSupp($index, $i) {
+  particularSupp($index, $i, $id) {
       this.state.vendorData.map(($data, $itr) => {
           $(`#suppQ-${$index}-${$itr}`).prop('checked', false);
       })

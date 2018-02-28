@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Switch, Redirect } from 'react-router-dom';
 import { Layout } from './secComponents/Layout/Layout';
 import { SignUp } from './secComponents/Signup/Signup';
 import { Login } from './secComponents/Login/Login';
@@ -19,12 +19,14 @@ export const Routes = () => (
 			<Route exact path="/login" component={ Login } />
 			<Private>
 				<Layout>
-					<Route exact path="/bom2" component={ BomList } />
+					{/* <Route exact path="/bom2" component={ BomList } /> */}
+					<Route exact path="/" component={Intro} />
 					<Route exact path="/bom/:bomId" component={ BomTable } />
 					<Route exact path="/vendor" component={ VendorTable } />
 					<Route exact path="/admin" component={ VendorTable } />
 					<Route exact path="/bom" component={Intro} />
 					<Route path="/main" component={Main} />
+					{/* <Redirect exact from='/' to='/bom'/> */}
 				</Layout>
 			</Private>
 		</Switch>
