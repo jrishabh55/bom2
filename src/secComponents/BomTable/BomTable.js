@@ -349,26 +349,22 @@ export class BomTable extends Component {
   }
 
   selectSupp($i) {
-
-      this.state.currData.map(($data, $index) => {
-          this.state.vendorData.map(($data2, $it) => {
-              $(`#suppQ-${$index}-${$it}`).prop('checked', false);
-              $(`#suppInput-${$it}`).prop('checked', false)
+      if($(`#suppInput-${$i}`).prop('checked')===true) {
+          this.state.currData.map(($data, $index) => {
+              this.state.vendorData.map(($data2, $it) => {
+                  $(`#suppQ-${$index}-${$it}`).prop('checked', false);
+                  $(`#suppInput-${$it}`).prop('checked', false)
+              })
+              $(`#suppQ-${$index}-${$i}`).prop('checked', true);
           })
           $(`#suppInput-${$i}`).prop('checked', true)
-      })
-
-      if($(`#suppInput-${$i}`).prop('checked')===true){
-          this.state.currData.map(($data, $index) => {
-              $(`#suppQ-${$index}-${$i}`).prop('checked', true)
-          })
       }
       else {
           this.state.currData.map(($data, $index) => {
-              $(`#suppQ-${$index}-${$i}`).prop('checked', false)
+              $(`#suppQ-${$index}-${$i}`).prop('checked', false);
           })
+          $(`#suppInput-${$i}`).prop('checked', false)
       }
-
   }
 
   appendInput( $index ) {
@@ -564,10 +560,15 @@ export class BomTable extends Component {
   }
 
   particularSupp($index, $i, $id) {
-      this.state.vendorData.map(($data, $itr) => {
-          $(`#suppQ-${$index}-${$itr}`).prop('checked', false);
-      })
-      $(`#suppQ-${$index}-${$i}`).prop('checked', true);
+      if($(`#suppQ-${$index}-${$i}`).prop('checked')===false) {
+          $(`#suppQ-${$index}-${$i}`).prop('checked', false);
+      }
+      else {
+          this.state.vendorData.map(($data, $itr) => {
+              $(`#suppQ-${$index}-${$itr}`).prop('checked', false);
+          })
+          $(`#suppQ-${$index}-${$i}`).prop('checked', true);
+      }
   }
 
   exportBom() {
