@@ -75,29 +75,10 @@ export class VendorTable extends Component {
         ApiService.get(`/bom`).then(res => {
             this.setState({ bomList: res.estimates }, this.fetchBom.bind(this));
         });
-<<<<<<< HEAD
-        $(window).on('scroll', () => {
-            if ($(window).scrollTop() >= $(document).height() - $(window).height() - 10) {
-                  // this.fetchBom();
-               }
-        })
-
-        $(window).scroll(function() {
-            if ($(this).scrollTop() == 0) {
-
-            }
-        });
-
-    }
-
-    hideManuDetails($id) {
-      $(`#manuDetails-${$id}`).css("display", 'none');
-=======
     }
 
     hideManuDetails() {
         this.setState({showDetails: false});
->>>>>>> 4e686a07b8ad257e4d2a4f2fe2431e3bab29c49a
     }
 
     addComment($event, index) {
@@ -370,17 +351,10 @@ export class VendorTable extends Component {
                                             {$data.estimate.estimate_id || '-'}<br />
                                             <span className="clr-form-2 font-xs">{$data.estimate.date || '-'}</span>
                                         </td>
-<<<<<<< HEAD
-                                        <td className="custName" onClick={this.manuDetails.bind(this, $data.estimate, $index, $data['line_item_id'])}><span className="clr-primary">{$data.estimate.customer_name || '-'} <i className="float-right fas fa-info-circle"></i></span>{this.mDetails($data['line_item_id'])}</td>
-                                        <td><Input name={`manuName-${$index}`} type="text" disabled={this.state.editable ? null : 'disabled'} value={$data['item_custom_fields'][0] ? $data['item_custom_fields'][0].value : ''} onChange={this.updateBomFields.bind(this, 'manuName', $index)} /></td>
-                                        <td><Input name={`manuPart-${$index}`} type="text" disabled={this.state.editable ? null : 'disabled'} value={$data['item_custom_fields'][1] ? $data['item_custom_fields'][1].value : ''} onChange={this.updateBomFields.bind(this, 'manuPart', $index)} /></td>
-                                        <td><Input name={`product_type-${$index}`} type="text" disabled={this.state.editable ? null : 'disabled'} value={$data.product_type || ''} onChange={this.updateBomFields.bind(this, 'product_type', $index)} /></td>
-=======
                                         <td className="custName" onClick={this.manuDetails.bind(this, $data.estimate, $index)}><span className="clr-primary">{$data.estimate.customer_name || '-'} <i className="float-right fas fa-info-circle"></i></span>{((this.state.showDetails) && (this.manuIndex === $index)) ? manuDetails : ''}</td>
                                         <td><Input name={`manuName-${$index}`} placeholder="Manufacturer" type="text" disabled={this.state.editable ? null : 'disabled'} value={$data['item_custom_fields'][0] ? $data['item_custom_fields'][0].value : ''} onChange={this.updateBomFields.bind(this, 'manuName', $index)} /></td>
                                         <td><Input name={`manuPart-${$index}`} placeholder="Part No" type="text" disabled={this.state.editable ? null : 'disabled'} value={$data['item_custom_fields'][1] ? $data['item_custom_fields'][1].value : ''} onChange={this.updateBomFields.bind(this, 'manuPart', $index)} /></td>
                                         {/*<td><Input name={`product_type-${$index}`} placeholder="Item Group" type="text" disabled={this.state.editable ? null : 'disabled'} value={$data.product_type || ''} onChange={this.updateBomFields.bind(this, 'product_type', $index)} /></td>*/}
->>>>>>> 4e686a07b8ad257e4d2a4f2fe2431e3bab29c49a
                                         <td>{$data.quantity || '-'}</td>
                                         <td className="sm-width"><Input name={`current_stock-${$index}`} placeholder="Stock" type="number" disabled={this.state.editable ? null : 'disabled'} value={$data.current_stock || ''} onChange={this.updateBomFields.bind(this, 'current_stock', $index)} /></td>
                                         <td className="sm-width"><Input name={`tax_percentage-${$index}`} placeholder="GST %" type="number" disabled={this.state.editable ? null : 'disabled'} value={$data.tax_percentage || ''} onChange={this.updateBomFields.bind(this, 'tax_percentage', $index)} /></td>
