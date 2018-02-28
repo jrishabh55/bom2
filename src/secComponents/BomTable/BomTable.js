@@ -264,6 +264,18 @@ export class BomTable extends Component {
     } );
   }
 
+  removeByAttr(arr, key, val){
+      for( let i = 0; i < arr.length; i++ ) {
+          if(arr[i][key] == val)
+          {
+              console.log(i);
+              arr.splice(i,1)
+              console.log(arr)
+          }
+      }
+
+  }
+
   updateOrder( redirect = true ) {
     const data = {
       items: this.state.currData.map( ( $data, $index ) => {
@@ -308,9 +320,14 @@ export class BomTable extends Component {
 
       // Please update this to supplier price and not list price
       $data = $data._source || $data;
-      const rate = $data.msrp || $data.rate;
-
-      if (this.selectedPrices[$data.line_item_id] && rate ) {
+      let rate;
+      this.state.vendorData.forEach(($d, $in) => {
+          rate = $d[$data.line_item_id] ? $d[$data.line_item_id].bid_price : '';
+          console.log(rate)
+          return;
+      })
+      console.log(this.selectedPrices.find(o=>o.line_item==$data.line_item_id))
+      if (this.selectedPrices.find(o=>o.line_item==$data.line_item_id) && rate ) {
         const qty = $( `[name=quantity-${ $index }]` )[ 0 ].value;
         const data =  ( {
           "description": $data.description,
@@ -319,7 +336,7 @@ export class BomTable extends Component {
           "rate": $data.msrp || $data.rate,
           "quantity": $data.quantity,
           "item_total": $data.item_total || ( ( $data.quantity || 0 ) * ( $data.rate || $data.msrp ) ),
-          "line_item_id": $data.line_item_id,
+          // "line_item_id": $data.line_item_id,
           "item_custom_fields": [
             {
               "label": "Customer Manufacturer",
@@ -329,7 +346,7 @@ export class BomTable extends Component {
               "value": $data.company_sku || getProp( $data.item_custom_fields[1], 'value' )
             }, {
               'label': 'vendor_id',
-              "value": "" // Please update vendor id here
+              "value": this.selectedPrices.find(o=>o.line_item==$data.line_item_id)['vendorId']
             }
           ]
 
@@ -337,13 +354,14 @@ export class BomTable extends Component {
         items.push(data);
       }
     });
-
-    const data = { items: items };
-
-    return ApiService.put( `/customer/${ StorageService.getItem( 'contactId' )}/bom/${ this.bomId }`, data ).then( res => {
+    console.log(this.state.currData)
+    const data = { vendor_id: '759865000001201229', line_items: items };
+    console.log(data)
+    return ApiService.put( `/customer/${ StorageService.getItem( 'contactId' )}/po/${ this.bomId }`, data ).then( res => {
       if ( redirect ) {
         this.props.history.push( '/bom' );
       }
+      console.log(res)
       toastr.success( res.message );
     } );
   }
@@ -353,15 +371,28 @@ export class BomTable extends Component {
           this.state.currData.map(($data, $index) => {
               this.state.vendorData.map(($data2, $it) => {
                   $(`#suppQ-${$index}-${$it}`).prop('checked', false);
+                  this.removeByAttr(this.selectedPrices, 'line_item', $data.line_item_id);
+                  console.log(this.selectedPrices)
                   $(`#suppInput-${$it}`).prop('checked', false)
               })
               $(`#suppQ-${$index}-${$i}`).prop('checked', true);
+              let vId = this.state.vendorQuotes[$i].aggregations ?
+              (this.state.vendorQuotes[$i].aggregations.lowest_quotes.buckets.find(o => o.key == $data.line_item_id).min_quotes.hits.hits[0]._id)
+              :
+              (this.state.vendorQuotes[$i].hits.hits.find(o=>o._source.line_item_id==$data.line_item_id)._id)
+              vId = vId.substr(19);
+              let bid_price = this.state.vendorData[$i][$data.line_item_id].bid_price;
+              const bidder = { line_item: $data.line_item_id, vendorId: vId, price: bid_price };
+              this.selectedPrices.push(bidder)
+              console.log(this.selectedPrices)
           })
           $(`#suppInput-${$i}`).prop('checked', true)
       }
       else {
           this.state.currData.map(($data, $index) => {
               $(`#suppQ-${$index}-${$i}`).prop('checked', false);
+              this.removeByAttr(this.selectedPrices, 'line_item', $data.line_item_id);
+              console.log(this.selectedPrices)
           })
           $(`#suppInput-${$i}`).prop('checked', false)
       }
@@ -560,15 +591,28 @@ export class BomTable extends Component {
   }
 
   particularSupp($index, $i, $id) {
+      let vId = this.state.vendorQuotes[$i].aggregations ?
+                (this.state.vendorQuotes[$i].aggregations.lowest_quotes.buckets.find(o => o.key == $id).min_quotes.hits.hits[0]._id)
+                :
+                (this.state.vendorQuotes[$i].hits.hits.find(o=>o._source.line_item_id==$id)._id)
+      vId = vId.substr(19);
+      let bid_price = this.state.vendorData[$i][$id].bid_price;
+      const bidder = { line_item: $id, vendorId: vId, price: bid_price };
+
       if($(`#suppQ-${$index}-${$i}`).prop('checked')===false) {
           $(`#suppQ-${$index}-${$i}`).prop('checked', false);
+          this.removeByAttr(this.selectedPrices, 'line_item', $id)
       }
       else {
           this.state.vendorData.map(($data, $itr) => {
               $(`#suppQ-${$index}-${$itr}`).prop('checked', false);
+              this.removeByAttr(this.selectedPrices, 'line_item', $id)
           })
           $(`#suppQ-${$index}-${$i}`).prop('checked', true);
+
+          this.selectedPrices.push(bidder)
       }
+      console.log(this.selectedPrices)
   }
 
   exportBom() {
