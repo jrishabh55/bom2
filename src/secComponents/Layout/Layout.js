@@ -7,13 +7,13 @@ import '../main.css';
 export class Layout extends Component {
 
     render() {
-
-        return <Redirect to="/login"></Redirect>
-
-        // return (<div className="layout">
-        //     <Container fluid="true">
-        //             <Header/>
-        //     </Container>
-        // </div>)
+        return (<div className="layout">
+            <Container fluid="true">
+                    <Header/>
+                    <div className="clearfix" />
+                    <div style={{marginBottom: '20px'}} />
+                    { this.props.children }
+            </Container>
+        </div>)
     }
 }

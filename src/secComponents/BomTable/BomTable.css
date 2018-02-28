@@ -203,6 +203,10 @@ table tbody {
     text-align: left;
 }
 
+table tbody input::placeholder {
+    font-size: 11px !important;
+}
+
 table tbody tr > td {
     border: 1px solid #DFDFDF;
     padding: 5px !important;

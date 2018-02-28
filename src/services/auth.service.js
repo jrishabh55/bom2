@@ -1,7 +1,6 @@
 import { ApiService } from './api.service';
 import { StorageService } from './storage.service';
-import { Redirect } from 'react-router';
-
+import { history } from '../helpers';
 class AuthService {
 
     constructor() {
@@ -63,7 +62,8 @@ class AuthService {
     }
 
     logout() {
-        return StorageService.clear();
+        StorageService.clear();
+        history.push('/login');
     }
 }
 

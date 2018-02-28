@@ -61,7 +61,7 @@ class App extends Component {
     }
 
     return ( <section className="content bom-tool manage" style={{
-        marginTop: '-60px'
+        marginTop: '-40px'
       }}>
       <div className="inner">
         <h1>

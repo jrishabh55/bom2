@@ -90,6 +90,9 @@ export class BomTable extends Component {
     } );
   }
 
+  paste() {
+  }
+
   componentWillMount() {
     if ( this.isImport ) {
       const bom = BomService.last();
@@ -128,7 +131,6 @@ export class BomTable extends Component {
       let prefVend = StorageService.getItem( 'prefVendors' );
       prefVend = prefVend.trim().split( ',' ).map( vendor => vendor.trim() );
       ApiService.get( `/customer/${ this.getContactId()}/bom/${ this.bomId }` ).then( res => {
-        console.log( res )
         this.setState( { bom_title: res.estimate.custom_field_hash.cf_title, temp_bom_title: res.estimate.custom_field_hash.cf_title } );
         this.currBomData = res.estimate.line_items;
         this.setState( {
@@ -137,18 +139,15 @@ export class BomTable extends Component {
           let data = this.state.vendorQuotes;
           this.calOrderAmount();
           ApiService.get( `/customer/${ this.getContactId()}/bom/${ this.bomId }/vendor/lowest_quotes` ).then( lowest => {
-              console.log(lowest.aggregations.lowest_quotes.buckets)
             if ( lowest.aggregations.lowest_quotes.buckets.length > 0 ) {
               data.push( lowest );
-              this.setState( { vendorQuotes: data }, console.log(this.state.vendorQuotes) )
+              this.setState( { vendorQuotes: data } )
               this.quotedCurrData( 0 );
               prefVend.map( ( $vend, $i ) => {
                 data = this.state.vendorQuotes;
                 ApiService.get( `/customer/${ this.getContactId()}/bom/${ this.bomId}/vendor/${ $vend }` ).then( qRes => {
-                    console.log(qRes)
                   if ( qRes.hits.hits.length > 0 ) {
                     data.push( qRes );
-                    console.log(qRes)
                     this.setState( { vendorQuotes: data } );
                     this.quotedCurrData( ( $i + 1 ) );
                   }
@@ -181,17 +180,12 @@ export class BomTable extends Component {
     let temp = this.state.vendorData;
     if ( $i == 0 ) {
       quote = vData[ temp.length ].aggregations.lowest_quotes.buckets.reduce( ( ittr, item ) => {
-          console.log(item)
         ittr[ item.key ] = item.min_quotes.hits.hits[ 0 ]._source.quote;
         return ittr;
       }, {} );
     } else {
       quote = vData[ temp.length ].hits.hits.reduce( ( itttr, item ) => {
-          console.log(item['_source'])
-          console.log(item['_source'].line_item_id)
         itttr[ item['_source'].line_item_id ] = item._source.quote;
-        console.log("ITTR", itttr)
-        console.log(item)
         return itttr;
       }, {} );
     }
@@ -272,7 +266,6 @@ export class BomTable extends Component {
       items: this.state.currData.map( ( $data, $index ) => {
         $data = $data._source || $data;
         const qty = $( `[name=quantity-${ $index }]` )[ 0 ].value;
-        console.log( $data.quantity, qty );
         return ( {
           "description": $data.description,
           "item_order": $index,
@@ -342,16 +335,22 @@ export class BomTable extends Component {
   }
 
   selectSupp($i) {
-      console.log()
+
+      this.state.currData.map(($data, $index) => {
+          this.state.vendorData.map(($data2, $it) => {
+              $(`#suppQ-${$index}-${$it}`).prop('checked', false);
+              $(`#suppInput-${$it}`).prop('checked', false)
+          })
+          $(`#suppInput-${$i}`).prop('checked', true)
+      })
+
       if($(`#suppInput-${$i}`).prop('checked')===true){
           this.state.currData.map(($data, $index) => {
-              console.log($(`#suppQ-${$index}-${$i}`))
               $(`#suppQ-${$index}-${$i}`).prop('checked', true)
           })
       }
       else {
           this.state.currData.map(($data, $index) => {
-              console.log($(`#suppQ-${$index}-${$i}`))
               $(`#suppQ-${$index}-${$i}`).prop('checked', false)
           })
       }
@@ -467,13 +466,12 @@ export class BomTable extends Component {
     return ( this.supplierDataBody = [
       <td className="stock">
         <label className="checkContainer">
-          <Input id={`suppQ-${$index}-${$i}`} type="checkbox" name={`suppQ-${$index}-${$i}`} />
+          <Input onChange={this.particularSupp.bind(this,$index, $i)} id={`suppQ-${$index}-${$i}`} type="checkbox" name={`suppQ-${$index}-${$i}`} />
           <span className="checkmark"></span>
         </label>
         &#8377;{getProp( this.state.vendorData[ $i ][$data.line_item_id], 'bid_price' ) || '-'}<br/>
         <span className="stockLeft">{getProp( this.state.vendorData[ $i ][$data.line_item_id], 'current_stock' ) || '-'}</span>
-        <span>
-          in stock</span>
+        <span> in stock</span>
       </td>,
       (
         this.state.supp
@@ -551,11 +549,17 @@ export class BomTable extends Component {
     } );
   }
 
+  particularSupp($index, $i) {
+      this.state.vendorData.map(($data, $itr) => {
+          $(`#suppQ-${$index}-${$itr}`).prop('checked', false);
+      })
+      $(`#suppQ-${$index}-${$i}`).prop('checked', true);
+  }
+
   exportBom() {
     const title = this.state.bom_title.trim();
     const data = this.state.currData.map( ( $data, $index ) => {
       $data = $data._source || $data;
-      console.log($data)
       return ( {
         "Name": $data.name,
         "Customer Manufacturer": $data.manufacturer || getProp( $data.item_custom_fields[0], 'value' ),
@@ -592,8 +596,7 @@ export class BomTable extends Component {
     ];
 
     return ( <div className="bomTable">
-      <Container fluid={true}>
-        <Row id="bomHead">
+      <Row id="bomHead">
           <Col md="6">
             <span className="font-md clr-blue">
               <Link to="/bom">Saved BOM</Link>
@@ -717,7 +720,7 @@ export class BomTable extends Component {
                               <Input id={`suppInput-${$i}`} onChange={this.selectSupp.bind(this, $i)} type="checkbox" name={`suppInput-${$i}`} />
                               <span className="checkmark"></span>
                             </label>
-                              <span className="ml-3 sort" onClick={this.sorting.bind( this, 'supplierA.price' )}>Lowest Quote</span>
+                              <span className="ml-3 sort" onClick={this.sorting.bind( this, 'supplierA.price' )}>{$i==0 ? 'Lowest Quote' : `Supplier ${$i}`}</span>
                             </th>,
                             (
                               this.state.supp
@@ -838,8 +841,8 @@ export class BomTable extends Component {
             </Table>
             <Col md="4">
               <div id="copyMPN">
-                <Input value={this.state.searchItemValue} onChange={this.addMultiple.bind( this )} type="text" placeholder="Add MPN or SKU"/>
-                <span id="btnMPN">Paste</span>
+                <Input id="searchItm" value={this.state.searchItemValue} onChange={this.addMultiple.bind( this )} type="text" placeholder="Add MPN or SKU"/>
+                <span id="btnMPN" onClick={this.paste.bind()}>Paste</span>
               </div>
               <table className="table table-sm">
 
@@ -880,7 +883,6 @@ export class BomTable extends Component {
 
           </Col>
         </Row>
-      </Container>
     </div> )
   }
 }
