@@ -22,16 +22,7 @@ export class VendorTable extends Component {
         this.bomIndex = 0;
         this.bomsToFetch = 10;
         this.manuIndex = '';
-        // this.test = [
-        //     {
-        //         description: 'aa',
-        //         estimate: {
-        //             estimate_id: 46546845,
-        //             date: 'Jan 18, 2018'
-        //         }
-        //
-        //     }
-        // ];
+
         this.headWidth = [];
         let comment = [];
         let history = [];
@@ -87,7 +78,6 @@ export class VendorTable extends Component {
         $(window).on('scroll', () => {
             if ($(window).scrollTop() >= $(document).height() - $(window).height() - 10) {
                   // this.fetchBom();
-
                }
         })
 
@@ -99,9 +89,8 @@ export class VendorTable extends Component {
 
     }
 
-    hideManuDetails() {
-        console.log(this.state.showDetails)
-        this.setState({showDetails: false});
+    hideManuDetails($id) {
+      $(`#manuDetails-${$id}`).css("display", 'none');
     }
 
     addComment($event, index) {
@@ -238,58 +227,62 @@ export class VendorTable extends Component {
         this.setState({modalDescData: $data});
     }
 
-    manuDetails($data, $index) {
-        this.setState({showDetails: true});
-        this.manuIndex = $index;
-        ApiService.get(`/contacts/${$data.customer_id}`).then(res => {
-            this.setState({manuDetails: res.contact});
-        });
+    manuDetails($data, $index, $id) {
+      this.manuIndex = $index;
+      $(`#manuDetails-*`).css("display", 'none');
+      $(`#manuDetails-${$id}`).css("display", 'block');
+      ApiService.get(`/contacts/${$data.customer_id}`).then(res => {
+        this.setState({manuDetails: res.contact});
+      });
+    }
+
+    mDetails(id) {
+      return (
+        <div className="manuDetails" id={ `manuDetails-${id}` } style={{display: 'none'}}>
+            <div className="clearfix detailHead">
+                <Col md="12">
+                    <span className="clr-secondary font-lg">Customer Details</span>
+                    <button type="button" className="close">
+                      <span onClick={this.hideManuDetails.bind(this, id)}>&times;</span>
+                    </button>
+                </Col>
+            </div>
+            <div className="detailBody">
+                <div className="detailGroup">
+                    <Label>YOUR COMPANY NAME</Label>
+                    <p>{this.state.manuDetails.contact_name}</p>
+                    <hr />
+                </div>
+                <div className="detailGroup">
+                    <Label>CUSTOMER PHONE NUMBER</Label>
+                    <p>{this.state.manuDetails.contact_persons ? this.state.manuDetails.contact_persons[0].phone || '-' : '-'}</p>
+                    <hr />
+                </div>
+                <div className="detailGroup">
+                    <Label>CUSTOMER TYPE</Label>
+                    <p>{this.state.manuDetails.cf_type_of_company || '-'}</p>
+                    <hr />
+                </div>
+                <div className="detailGroup">
+                    <Label>CUSTOMER STATE</Label>
+                    <p>{this.state.manuDetails.shipping_address ? this.state.manuDetails.shipping_address.state || '-' : '-'}</p>
+                    <hr />
+                </div>
+                <div className="detailGroup">
+                    <Label>PURPOSE</Label>
+                    <p>{this.state.manuDetails.cf_purpose || '-'}</p>
+                    <hr />
+                </div>
+                <div className="detailGroup">
+                    <Label>TENTATIVE ORDER DATE</Label>
+                    <p>{this.state.manuDetails.cf_tentative_order_date || '-'}</p>
+                </div>
+            </div>
+        </div>
+      );
     }
 
     render() {
-        let manuDetails = (
-                <div className="manuDetails">
-                    <div className="clearfix detailHead">
-                        <Col md="12">
-                            <span className="clr-secondary font-lg">Customer Details</span>
-                            <button type="button" className="close">
-                              <span onClick={this.hideManuDetails.bind(this)}>&times;</span>
-                            </button>
-                        </Col>
-                    </div>
-                    <div className="detailBody">
-                        <div className="detailGroup">
-                            <Label>YOUR COMPANY NAME</Label>
-                            <p>{this.state.manuDetails.contact_name}</p>
-                            <hr />
-                        </div>
-                        <div className="detailGroup">
-                            <Label>CUSTOMER PHONE NUMBER</Label>
-                            <p>{this.state.manuDetails.contact_persons ? this.state.manuDetails.contact_persons[0].phone || '-' : '-'}</p>
-                            <hr />
-                        </div>
-                        <div className="detailGroup">
-                            <Label>CUSTOMER TYPE</Label>
-                            <p>{this.state.manuDetails.cf_type_of_company || '-'}</p>
-                            <hr />
-                        </div>
-                        <div className="detailGroup">
-                            <Label>CUSTOMER STATE</Label>
-                            <p>{this.state.manuDetails.shipping_address ? this.state.manuDetails.shipping_address.state || '-' : '-'}</p>
-                            <hr />
-                        </div>
-                        <div className="detailGroup">
-                            <Label>PURPOSE</Label>
-                            <p>{this.state.manuDetails.cf_purpose || '-'}</p>
-                            <hr />
-                        </div>
-                        <div className="detailGroup">
-                            <Label>TENTATIVE ORDER DATE</Label>
-                            <p>{this.state.manuDetails.cf_tentative_order_date || '-'}</p>
-                        </div>
-                    </div>
-                </div>
-        )
         return (<div className="vendorTable">
             <Container fluid={true}>
                 <Row id="vendorHead">
@@ -400,7 +393,7 @@ export class VendorTable extends Component {
                                             {$data.estimate.estimate_id || '-'}<br />
                                             <span className="clr-form-2 font-xs">{$data.estimate.date || '-'}</span>
                                         </td>
-                                        <td className="custName" onClick={this.manuDetails.bind(this, $data.estimate, $index)}><span className="clr-primary">{$data.estimate.customer_name || '-'} <i className="float-right fas fa-info-circle"></i></span>{((this.state.showDetails) && (this.manuIndex === $index)) ? manuDetails : ''}</td>
+                                        <td className="custName" onClick={this.manuDetails.bind(this, $data.estimate, $index, $data['line_item_id'])}><span className="clr-primary">{$data.estimate.customer_name || '-'} <i className="float-right fas fa-info-circle"></i></span>{this.mDetails($data['line_item_id'])}</td>
                                         <td><Input name={`manuName-${$index}`} type="text" disabled={this.state.editable ? null : 'disabled'} value={$data['item_custom_fields'][0] ? $data['item_custom_fields'][0].value : ''} onChange={this.updateBomFields.bind(this, 'manuName', $index)} /></td>
                                         <td><Input name={`manuPart-${$index}`} type="text" disabled={this.state.editable ? null : 'disabled'} value={$data['item_custom_fields'][1] ? $data['item_custom_fields'][1].value : ''} onChange={this.updateBomFields.bind(this, 'manuPart', $index)} /></td>
                                         <td><Input name={`product_type-${$index}`} type="text" disabled={this.state.editable ? null : 'disabled'} value={$data.product_type || ''} onChange={this.updateBomFields.bind(this, 'product_type', $index)} /></td>

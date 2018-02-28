@@ -469,7 +469,7 @@ export class BomTable extends Component {
         <label className="checkContainer">
           <Input id={`suppQ-${$index}-${$i}`} type="checkbox" name={`suppQ-${$index}-${$i}`} />
           <span className="checkmark"></span>
-        </label>{console.log(this.state.vendorData)}
+        </label>
         &#8377;{getProp( this.state.vendorData[ $i ][$data.line_item_id], 'bid_price' ) || '-'}<br/>
         <span className="stockLeft">{getProp( this.state.vendorData[ $i ][$data.line_item_id], 'current_stock' ) || '-'}</span>
         <span>
@@ -646,13 +646,7 @@ export class BomTable extends Component {
                 <Label>PURPOSE</Label>
                 <div className="selectCont">
                   <Input type="select" name="purpose">
-                    <option defaultValue={this.userDetails
-                        ? this.userDetails.cf_purpose
-                        : ''}>{
-                        this.userDetails
-                          ? this.userDetails.cf_purpose
-                          : 'Select Purpose'
-                      }</option>
+                    <option defaultValue={this.userDetails ? this.userDetails.cf_purpose : ''}>{ this.userDetails ? this.userDetails.cf_purpose : 'Select Purpose' }</option>
                     <option value="Budgetory">Budgetory</option>
                     <option value="To Quote Further">To Quote Further</option>
                     <option value="To Order Immediately">To Order Immediately</option>
@@ -755,15 +749,13 @@ export class BomTable extends Component {
                         <td>{$data.manufacturer || getProp( $data[ 'item_custom_fields' ][0], 'value' )}</td>
                         <td>{$data.company_sku || getProp( $data[ 'item_custom_fields' ][1], 'value' )}</td>
                         <td className="clip-content">
-                          <span onClick={this.descModal.bind( this, $data.description || '-', $index )} data-toggle="modal" data-target="#bomDescModal">{
-                              $data.description
-                                }</span>
+                          <span onClick={this.descModal.bind( this, $data.description || '-', $index )} data-toggle="modal" data-target="#bomDescModal">{ $data.description }</span>
                         </td>
                         <td className="qty"><Input type="number" name={`quantity-${ $index }`} value={$data.quantity} onChange={() => {
                           this.updateBomFields.call( this, 'quantity', $index );
                           this.calOrderAmount.call( this, $index );
                         }}/>
-                        </td>{console.log($data.line_item_id)}
+                        </td>
                         <td>{getProp( this.state.vendorData[$data.line_item_id], 'GST' ) || $data.tax_percentage}</td>
                         <td>{getProp( this.state.vendorData[$data.line_item_id], 'HSN' )}</td>
                         <td>
@@ -777,12 +769,10 @@ export class BomTable extends Component {
                         <td>{$data.custNotes}</td>
                         <td>{$data.bidSts}</td>
                       </tr> ) ];
-                      if ( !this.isNew ) {
+                      if ( false ) {
 
                         d.push( <tr>
-                          <td colSpan={this.state.supp
-                              ? 27
-                              : 15} className="tableFooter">
+                          <td colSpan={this.state.supp ? 27 : 15} className="tableFooter">
                             {
                               this.state.hiddenFooter !== $index
                                 ? ( <span>
