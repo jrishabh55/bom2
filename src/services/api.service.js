@@ -60,7 +60,7 @@ class ApiService {
 
   async addComment({ bom_id, item_id, msg }) {
     return this.post(`/bom/${bom_id}/comment/${item_id}`, {
-      by: AuthService.user().id,
+      by: AuthService.user().name,
       text: msg
     }).then(this.parse);
   }

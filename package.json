@@ -1,8 +1,8 @@
 {
     "name": "shoplect",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "private": true,
-    "homepage": "http://bom.shopelect.com",
+    "homepage": "https://bom.shopelect.com",
     "dependencies": {
         "auth0-js": "^9.3.0",
         "bootstrap": "^4.0.0",

@@ -6,9 +6,11 @@ import {StorageService} from '../../services/storage.service';
 import {AuthService} from '../../services/auth.service';
 
 export class Header extends Component {
+
     constructor() {
         super();
     }
+
     render() {
         return([
             <Row className="">
@@ -17,7 +19,7 @@ export class Header extends Component {
                 </Col>
                 <Col md="6">
                     <span className="ml-3 float-right font-sm2 clr-primary"><a href="javascript:void" onClick={AuthService.logout.bind(this)}>Logout</a></span>
-                    <span className="float-right font-sm2 clr-primary">{AuthService.user().name}</span>
+                    <span className="float-right font-sm2 clr-primary">{ AuthService.isAuthenticated() ? AuthService.user().name : '' }</span>
                 </Col>
             </Row>,
             <Row className="searchHeader align-items-center">

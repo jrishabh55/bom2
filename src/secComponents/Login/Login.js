@@ -20,9 +20,10 @@ export class Login extends Component {
     }
 
     componentWillMount() {
-        if (AuthService.isAuthenticated()) {
-            this.props.history.push('/bom');
-        }
+      console.log('login');
+      if (AuthService.isAuthenticated()) {
+        this.props.history.push('/bom');
+      }
     }
 
     fetchOtp() {

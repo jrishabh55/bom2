@@ -20,12 +20,12 @@ export const Routes = () => (
 			<Private>
 				<Layout>
 					{/* <Route exact path="/bom2" component={ BomList } /> */}
-					<Route exact path="/" component={Intro} />
+					<Route exact path="/" component={ Intro } />
 					<Route exact path="/bom/:bomId" component={ BomTable } />
 					<Route exact path="/vendor" component={ VendorTable } />
 					<Route exact path="/admin" component={ VendorTable } />
 					<Route exact path="/bom" component={Intro} />
-					<Route path="/main" component={Main} />
+					<Route path="/main" component={ Main } />
 					{/* <Redirect exact from='/' to='/bom'/> */}
 				</Layout>
 			</Private>

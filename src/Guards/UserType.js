@@ -5,12 +5,14 @@ import { AuthService } from '../services/auth.service';
 import { StorageService } from '../services/storage.service';
 import { history } from '../helpers';
 
-export class Private extends Guard {
+export class UserType extends Guard {
 
   canActive() {
-    if ( !AuthService.isAuthenticated() ) {
-      StorageService.clear();
-      history.push( this.path );
+    const user = AuthService.user();
+    if (user.type.toLowerCase() !== this.props.type.toLowerCase()) {
+      this.path = AuthService.user().type === 'customer' ? '/bom' : '/vendor';
+      // return history.push( this.path );
     }
+    return true;
   }
 }

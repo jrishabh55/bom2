@@ -44,11 +44,6 @@ export class BomTable extends Component {
     let comment = [];
     let history = [];
 
-    for ( let i = 0; i < 100; i++ ) {
-      comment.push( [] );
-      history.push( [] );
-    }
-
     this.state = {
       currData: [],
       hiddenFooter: true,
@@ -266,11 +261,9 @@ export class BomTable extends Component {
 
   removeByAttr(arr, key, val){
       for( let i = 0; i < arr.length; i++ ) {
-          if(arr[i][key] == val)
+          if(arr[i][key] === val)
           {
-              console.log(i);
               arr.splice(i,1)
-              console.log(arr)
           }
       }
 
@@ -323,11 +316,9 @@ export class BomTable extends Component {
       let rate;
       this.state.vendorData.forEach(($d, $in) => {
           rate = $d[$data.line_item_id] ? $d[$data.line_item_id].bid_price : '';
-          console.log(rate)
-          return;
-      })
-      console.log(this.selectedPrices.find(o=>o.line_item==$data.line_item_id))
-      if (this.selectedPrices.find(o=>o.line_item==$data.line_item_id) && rate ) {
+      });
+
+      if (this.selectedPrices.find(o => o.line_item === $data.line_item_id) && rate ) {
         const qty = $( `[name=quantity-${ $index }]` )[ 0 ].value;
         const data =  ( {
           "description": $data.description,
@@ -354,15 +345,17 @@ export class BomTable extends Component {
         items.push(data);
       }
     });
-    console.log(this.state.currData)
+
+    if (items.length === 0) {
+      return toastr.error("Please select one or more items to place an order.");
+    }
+
     const data = { vendor_id: '759865000001201229', line_items: items };
-    console.log(data)
     return ApiService.put( `/customer/${ StorageService.getItem( 'contactId' )}/po/${ this.bomId }`, data ).then( res => {
-      if ( redirect ) {
+      if ( false ) {
         this.props.history.push( '/bom' );
       }
-      console.log(res)
-      if(res.code == 29009) {
+      if(res.code !== 200) {
           toastr.error( res.message );
       }
       else {
@@ -475,12 +468,8 @@ export class BomTable extends Component {
       const push = this.state.comments;
 
       const date = new Date( Date.now() );
-      const timestamp = date.toDateString() + ", " + date.toLocaleString( 'en-US', {
-        hour: 'numeric',
-        minute: 'numeric',
-        hour12: true
-      } );
-      push[ index ].push( `${ timestamp} ${ comment }` );
+      const timestamp = date.toDateString() + ", " + date.toLocaleString( 'en-US', { hour: 'numeric', minute: 'numeric', hour12: true } );
+      push[ $id ].push( `${ timestamp } ${ comment }` );
       this.setState( { comments: push } );
       toastr.success( "Comment added." );
     } );
@@ -502,7 +491,7 @@ export class BomTable extends Component {
       } );
 
       const push = this.state.comments;
-      push[ index ] = comments;
+      push[ $id ] = comments;
       this.setState( { comments: push } );
     } );
   }
@@ -836,8 +825,7 @@ export class BomTable extends Component {
                         <td>{$data.custNotes}</td>
                         <td>{$data.bidSts}</td>
                       </tr> ) ];
-                      if ( false ) {
-
+                      if ( !this.isNew ) {
                         d.push( <tr>
                           <td colSpan={this.state.supp ? 27 : 15} className="tableFooter">
                             {
@@ -859,13 +847,13 @@ export class BomTable extends Component {
                                     <div style={{
                                         display: 'inline-block'
                                       }} className="viewActivityLog">
-                                      <a onClick={this.toggleFooter.bind( this, $index )} className="viewActivityLog" href=";" role="button" data-toggle="collapse" data-target={`#collapse${ $index }`} aria-expanded="true" aria-controls={`collapse${ $index }`}>
+                                      <a onClick={this.toggleFooter.bind( this, $index, false, $data.line_item_id  )} className="viewActivityLog" href=";" role="button" data-toggle="collapse" data-target={`#collapse${ $index }`} aria-expanded="true" aria-controls={`collapse${ $index }`}>
                                         Hide Comments log
                                         <i className="ml-1 far fa-minus-square"></i>
                                       </a>
                                     </div>
                                     <ul className="ml-3 commentLog">
-                                      {this.state.comments[ $index ].map( comment => <li>{comment}</li> )}
+                                      {this.state.comments[ $data.line_item_id ] ? this.state.comments[ $data.line_item_id ].map( comment => <li>{comment}</li> ) : ''}
                                     </ul>
                                     <br/>
                                     <input type="text" name="comment" data={`comment-${ $data.line_item_id }`} placeholder="Add comments or Chat"/>
@@ -884,7 +872,7 @@ export class BomTable extends Component {
                                         </ul>
                                       </span>
                                       <span>
-                                        <a onClick={this.toggleFooter.bind( this, $index )} className="viewActivityLog" href=";" role="button" data-toggle="collapse" data-target={`#collapse${ $index }`} aria-expanded="true" aria-controls={`collapse${ $index }`}>
+                                        <a onClick={this.toggleFooter.bind( this, $index, false, $data.line_item_id  )} className="viewActivityLog" href=";" role="button" data-toggle="collapse" data-target={`#collapse${ $index }`} aria-expanded="true" aria-controls={`collapse${ $index }`}>
                                           Hide activity log
                                           <i className="ml-1 far fa-minus-square"></i>
                                         </a>
