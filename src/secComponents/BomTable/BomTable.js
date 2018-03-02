@@ -40,6 +40,7 @@ export class BomTable extends Component {
     this.isImport = this.bomId === 'import';
     // Array for prices to be selected by customer.
     this.selectedPrices = [];
+    this.purpose;
 
     let comment = [];
     let history = [];
@@ -131,6 +132,8 @@ export class BomTable extends Component {
       ApiService.get( `/customer/${ this.getContactId()}/bom/${ this.bomId }` ).then( res => {
         this.setState( { bom_title: res.estimate.custom_field_hash.cf_title, temp_bom_title: res.estimate.custom_field_hash.cf_title } );
         this.currBomData = res.estimate.line_items;
+        this.purpose = res.estimate.custom_fields.find(o => o.customfield_id == '759865000001288148').value
+        this.timeline = res.estimate.custom_fields.find(o => o.customfield_id == '759865000001288156').value
         this.setState( {
           currData: this.currBomData
         }, () => {
@@ -244,10 +247,22 @@ export class BomTable extends Component {
           ]
         } );
       } ),
+      custom_fields: [
+          {
+              index: 4,
+              value: "isBOM"
+          },
+          {
+              index: 5,
+              value: $('select[name=purpose]')[0].value
+          },
+          {
+              index: 6,
+              value: $('select[name=timeline]')[0].value
+          }
+      ],
       title: this.state.bom_title
     };
-
-    console.log( `/customer/${ this.getContactId() }/bom` );
 
     ApiService.post( `/customer/${ this.getContactId() }/bom`, data ).then( res => {
       if ( res.message === "The estimate has been created." ) {
@@ -294,6 +309,16 @@ export class BomTable extends Component {
 
         } );
       } ),
+      custom_fields: [
+          {
+              index: 5,
+              value: $('select[name=purpose]')[0].value
+          },
+          {
+              index: 6,
+              value: $('select[name=timeline]')[0].value
+          }
+      ],
       title: this.state.bom_title
     };
 
@@ -370,7 +395,6 @@ export class BomTable extends Component {
               this.state.vendorData.map(($data2, $it) => {
                   $(`#suppQ-${$index}-${$it}`).prop('checked', false);
                   this.removeByAttr(this.selectedPrices, 'line_item', $data.line_item_id);
-                  console.log(this.selectedPrices)
                   $(`#suppInput-${$it}`).prop('checked', false)
               })
               $(`#suppQ-${$index}-${$i}`).prop('checked', true);
@@ -382,7 +406,6 @@ export class BomTable extends Component {
               let bid_price = this.state.vendorData[$i][$data.line_item_id].bid_price;
               const bidder = { line_item: $data.line_item_id, vendorId: vId, price: bid_price };
               this.selectedPrices.push(bidder)
-              console.log(this.selectedPrices)
           })
           $(`#suppInput-${$i}`).prop('checked', true)
       }
@@ -390,7 +413,6 @@ export class BomTable extends Component {
           this.state.currData.map(($data, $index) => {
               $(`#suppQ-${$index}-${$i}`).prop('checked', false);
               this.removeByAttr(this.selectedPrices, 'line_item', $data.line_item_id);
-              console.log(this.selectedPrices)
           })
           $(`#suppInput-${$i}`).prop('checked', false)
       }
@@ -606,7 +628,6 @@ export class BomTable extends Component {
 
           this.selectedPrices.push(bidder)
       }
-      console.log(this.selectedPrices)
   }
 
   exportBom() {
@@ -670,7 +691,7 @@ export class BomTable extends Component {
               </span>
               <FormGroup>
                 <div className="selectCont alt-dd">
-                  <Input id="currency" className="empty-input" type="select" name="timeline" onChange={this.currency.bind( this )}>
+                  <Input id="currency" className="empty-input" type="select" name="currency" onChange={this.currency.bind( this )}>
                     <option>INR</option>
                     <option>USD</option>
                     <option>GBP</option>
@@ -702,8 +723,8 @@ export class BomTable extends Component {
                 <Label>PURPOSE</Label>
                 <div className="selectCont">
                   <Input type="select" name="purpose">
-                    <option defaultValue={this.userDetails ? this.userDetails.cf_purpose : ''}>{ this.userDetails ? this.userDetails.cf_purpose : 'Select Purpose' }</option>
-                    <option value="Budgetory">Budgetory</option>
+                    <option defaultValue={this.purpose || AuthService.User.purpose}>{ this.purpose || AuthService.User.purpose }</option>
+                    <option value="Budgetory">Budgetary</option>
                     <option value="To Quote Further">To Quote Further</option>
                     <option value="To Order Immediately">To Order Immediately</option>
                   </Input>
@@ -713,13 +734,7 @@ export class BomTable extends Component {
                 <Label>TENTATIVE ORDER DATE</Label>
                 <div className="selectCont">
                   <Input type="select" name="timeline">
-                    <option defaultValue={this.userDetails
-                        ? this.userDetails.cf_tentative_order_date
-                        : ''}>{
-                        this.userDetails
-                          ? this.userDetails.cf_tentative_order_date
-                          : 'Select Timeline'
-                      }</option>
+                    <option defaultValue={ this.timeline || AuthService.User.tentativeOrderDate}>{ this.timeline || AuthService.User.tentativeOrderDate }</option>
                     <option value="At the Earliest">At the Earliest</option>
                     <option value="2-3 Weeks">2-3 Weeks</option>
                     <option value="Not sure">Not sure</option>
@@ -734,7 +749,7 @@ export class BomTable extends Component {
               <span className="clr-secondary font-xs ml-3">Auto fill</span>
               <FormGroup className="ml-2">
                 <div className="selectCont alt-dd">
-                  <Input className="empty-input" type="select" name="timeline">
+                  <Input className="empty-input" type="select" name="autofill">
                     <option>Lowest Price (Overall)</option>
                   </Input>
                 </div>
@@ -773,7 +788,7 @@ export class BomTable extends Component {
                               <Input id={`suppInput-${$i}`} onChange={this.selectSupp.bind(this, $i)} type="checkbox" name={`suppInput-${$i}`} />
                               <span className="checkmark"></span>
                             </label>
-                              <span className="ml-3 sort" onClick={this.sorting.bind( this, 'supplierA.price' )}>{$i==0 ? 'ShopElect' : `Supplier ${$i}`}</span>
+                              <span className="ml-3 sort" onClick={this.sorting.bind( this, 'bid_price' )}>{$i==0 ? 'ShopElect' : `Supplier ${$i}`}</span>
                             </th>,
                             (
                               this.state.supp
