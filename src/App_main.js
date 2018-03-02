@@ -114,6 +114,7 @@ class App extends Component {
 			total: _total
 		};
 	}
+
 	addMulti = () => {
 		var str = this.state.multiAdd;
 		var arr = str.split('\n');
@@ -122,6 +123,7 @@ class App extends Component {
 			this.getInfo(-1, chunk[0], parseInt(chunk[1]));
 		}
 	};
+	
 	saveBom = () => {
 		let bomTemp = this.state.boms.slice(0);
 		bomTemp[this.state.bomID].title = this.state.caption;
